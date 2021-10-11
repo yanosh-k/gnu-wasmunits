@@ -75,6 +75,9 @@ To build and use the WASM library:
 ```
     # Copy all a.out.* files to your project folder
     cp a.out.* /srv/web/my-project/
+	
+	# Include the main javascript file
+	<script src="./a.out.js"></script>
 
     # Call the "convert_unit" using ccall():
     Module.ccall('convert_unit', 'string', ['string', 'string'], ['1inch', 'm']);
