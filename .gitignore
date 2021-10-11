@@ -8,4 +8,6 @@ config.status
 units
 units.1
 units_cur_inst
+units.dvi
+units.man
 Makefile
