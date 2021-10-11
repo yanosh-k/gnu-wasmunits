@@ -1,0 +1,612 @@
+﻿\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename UnitsMKS.info
+@finalout
+@setchapternewpage off
+@firstparagraphindent none
+@set EDITION 2.1
+@set VERSION 2.21
+@set TKVERSION 10.2
+@set OSVERSION 10
+@set VSVERSION 2015
+@set BUILDDATE @w{12 November} 2020
+@c %**end of header
+
+@copying
+This manual is for building and installing GNU @command{units} (version
+@value{VERSION}) on Microsoft Windows with the PTC MKS Toolkit.
+
+Copyright @copyright{} 2016--2020 Free Software Foundation, Inc.
+
+@end copying
+
+@titlepage
+@title @w{Building and Installing} @w{GNU @command{units}} on @w{Microsoft Windows} with the @w{MKS Toolkit}
+@subtitle Edition @value{EDITION} for @command{units} Version @value{VERSION}
+@author Jeff Conrad
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+@contents
+
+@iftex
+@headings off
+@everyheading Building @command{units} on Windows with MKS Toolkit @| @| @thispage
+@end iftex
+
+@macro label {text}
+@w{@sansserif{\text\}}
+@end macro
+
+@node Preface
+@unnumbered Preface
+
+This manual covers configuring, building, and installing GNU
+@command{units} from the MKS Korn shell on Microsoft Windows.  The
+process runs much as it would on Unix-like systems, and much of what
+follows assumes that the installation will be in the same places as they
+would on Unix-like systems (e.g., @file{C:/usr/local/bin} for the
+executable).  Most of the discussion implicitly assumes using Microsoft
+Visual Studio for compiling.
+
+If Visual Studio is installed but Unix-like commands are not available,
+you can probably build @command{units} from the Windows command prompt
+using @file{Makefile.Win}---@pxref{Top,,,UnitsWin,UnitsWin} for details.
+
+A binary distribution for Windows is available, but if you use 
+@command{more} or @command{less} as your pager, it is better to build
+@command{units} for MKS---@pxref{Behavior of @env{PAGER}}, for details.
+
+The system on which the build was done had @file{/bin} as a symbolic
+link to @w{@file{C:/Program Files (x86)/MKS Toolkit/mksnt}}; with this
+approach, there is no need to change the first lines of any scripts in
+the units distribution.
+
+The most recent build was for @command{units} version @value{VERSION},
+using the MKS Toolkit for Developers version @value{TKVERSION} and
+Microsoft Visual Studio @value{VSVERSION} on Microsoft Windows
+Professional @value{OSVERSION} on @value{BUILDDATE}.
+
+  --- Jeff Conrad (@email{jeff_conrad@@msn.com}) @value{BUILDDATE}
+
+@node Building and Installing @command{units}
+@unnumbered Building and Installing @command{units}
+
+@node Overview
+@unnumberedsec Overview
+
+On Unix-like systems, building and installing @command{units} is simple;
+just type
+
+@example
+./configure; make; make install
+@end example
+
+@noindent
+On Windows---even if Unix-like utilities such as the MKS Toolkit are
+available---additional steps are usually needed.  A more realistic
+procedure might be as follows:
+
+@enumerate
+
+@item
+Create a @file{config.site} file that specifies several parameters for
+@command{configure}.  Alternatively, you can pass the parameters to
+@command{configure} at invocation.
+
+@item
+Start an instance of the Korn shell with administrative privilege.
+
+@item
+If you are using Microsoft Visual Studio, initialize the environment
+variables for Visual Studio with the @command{setvcvars} script:
+
+@example
+. ./setvcvars
+@end example
+
+@item
+Prepare the files needed to build @command{units} by running the
+configuration script:
+
+@example
+./configure
+@end example
+
+@item
+Manually adjust @file{Makefile} if necessary.
+
+@item
+Build the executable and support files:
+
+@example
+make
+@end example
+
+@item
+If the build is successful, install the package:
+
+@example
+make install
+@end example
+
+@end enumerate
+
+@noindent
+Some of the issues involved are discussed below.
+
+@node Configuring @command{configure}
+@unnumberedsec Configuring @command{configure}
+
+The @command{configure} script attempts to make the build process
+system independent.  But on non--Unix-like systems, @command{configure}
+often needs some help.  When using the MKS Toolkit on Windows,
+@command{configure} depends on the environment variables
+@env{ac_executable_extensions} and @env{PATH_SEPARATOR}.  It is often
+easier to use the Microsoft Visual Studio C compiler @command{cl}
+directly rather than through the MKS wrapper @command{cc}; for this to
+happen, the variable @env{CC} must be set to @code{cl} or @code{cl.exe}.
+
+The variables can be given to @command{configure} in several ways:
+
+@itemize @bullet
+
+@item
+The variables can be passed to @command{configure} at invocation as
+name--value pairs, i.e.,
+
+@example
+./configure [@var{name}=@var{value} ...]
+@end example
+
+@item
+The variables can be set and marked for export, e.g.,
+
+@example
+@group
+export ac_executable_extensions=".exe .sh .ksh"
+export PATH_SEPARATOR=";"
+@end group
+@end example
+
+@item
+The variables can be set in a site configuration script that is read by
+@command{configure} at invocation.  Such a script might include
+
+@example
+@group
+ac_executable_extensions=".exe .sh .ksh"
+PATH_SEPARATOR=";"
+@end group
+@end example
+
+@noindent
+By default, the script is @w{@file{/usr/local/share/config.site}}.  If
+you specify a location other than @file{/usr/local/} for the
+installation with the @option{--prefix} option to @command{configure},
+the configuration script is expected to be @w{@file{@var{prefix}/local/
+share/config.site}}.  If you wish to have a fixed location for the
+configuration script, you can do so with the @env{CONFIG_SITE}
+environment variable.  For example, if you have a configuration script
+that you want read regardless of the @option{--prefix} option, you could
+give
+
+@example
+CONFIG_SITE="C:/usr/local/share/config.site"
+@end example
+
+@noindent
+A more complete @file{config.site} might include
+
+@example
+@group
+ac_executable_extensions=".exe .sh .ksh"
+ac_ext=cpp
+prefix=C:/usr/local
+PATH_SEPARATOR=";"
+INSTALL="C:/usr/local/bin/install.exe -c"
+CC=cl.exe
+CFLAGS="-O2 -W3 -D_CRT_SECURE_NO_WARNINGS -nologo"
+CXX=cl.exe
+CXXFLAGS="-O2 -W3 -D_CRT_SECURE_NO_WARNINGS -nologo"
+@end group
+@end example
+
+(@env{ac_ext}, @env{CXX}, and @env{CXXFLAGS} are not needed for building
+@command{units})
+@end itemize
+
+@node Customizing the Installation
+@unnumberedsec Customizing the Installation
+
+By default, @samp{make install} installs @command{units} in
+subdirectories of @file{/usr/local}; you can specify a different
+location using the @option{--prefix} option.  For example,
+if you want to install @command{units} in
+@file{C:/Program Files/GNU}, you might invoke @command{configure}
+with
+
+@example
+@./configure --prefix=C:/Progra~1/GNU
+@end example
+
+@noindent
+The Windows ``8.3'' short name is used because the installation process
+does not like spaces or parentheses in pathnames.  The short name for
+@file{C:/Program Files} is usually as shown, but can vary from
+system to system.  You can find the actual short name on your system
+with the @command{dosname} command, e.g.,
+
+@example
+dosname "C:/Program Files"
+@end example
+
+If you don't specify a prefix, or you specify a prefix without a drive
+letter, the installation will be on the same drive as the MKS Toolkit.
+
+@command{configure} provides many other options for customizing the
+installation; typing
+
+@example
+./configure --help
+@end example
+
+@noindent
+gives a summary of these options.  Running @command{configure} is
+discussed in detail under the section ``Running @command{configure}
+Scripts'' in the GNU documentation for @command{autoconf}, available at
+@url{http:// www.gnu.org/software/autoconf/}.
+
+@node Administrative Privilege
+@unnumberedsec Administrative Privilege
+
+If you plan to install @command{units} in a location where you lack write
+permission, you'll need administrative permission for the installation
+and perhaps for the configuration and build (@pxref{``install'' Programs}).
+The easiest way to do this is to start the shell by right-clicking on
+the shell icon (or a shortcut) from Explorer and using the
+@label{Run as administrator} option from the context menu.
+
+@node Environment Variables for Visual Studio
+@unnumberedsec Environment Variables for Visual Studio
+
+Microsoft Visual Studio requires that several environment variables
+(e.g., @env{PATH}) be set to include numerous directories for a build
+from the command line.
+Visual Studio provides an option on the Windows Start Menu to run an
+instance of the Windows command interpreter with these variables
+initialized.
+
+@node Initialization with the Korn Shell
+@unnumberedsubsec Initialization with the Korn Shell
+
+The @command{setvcvars} script included in the units distribution will
+set these variables for the shell by running the batch file used for the
+Visual Studio command prompt, writing the variable values to the
+standard output, and reading them into the shell.  For the values to
+persist, the script must of course be run in the current environment,
+e.g., @samp{source ./setvcvars} or @w{@samp{. ./setvcvars}}.  These
+variables must be set for any command-line build with Visual Studio, so
+it may be helpful to copy the script to a directory that's in @env{PATH}
+(e.g., @file{/usr/local/bin}).
+
+@node Adjustment for Different Visual Studio Installations
+@unnumberedsubsec Adjustment for Different Visual Studio Installations
+
+The location of the batch file and the values of the environment
+variables are installation specific; the @command{setvcvars} script
+assumes a standard installation of Visual Studio 2015 Express or Visual
+Studio 2015 Community.  For a nonstandard installation or for a
+different version, the value of @code{vsbatfile} in the script may need
+to be modified.  To find the appropriate value, go to the Windows Start
+Menu, find Visual Studio 20@var{xx} @label{Developer Command Prompt for
+VS20@var{xx}}, right click, and select @label{Properties}; the
+@label{Target} on the @label{Shortcut} tab should contain the proper
+path for the batch file.
+
+On @w{Windows 10}, additional steps are needed to find the location of
+the batch file.  Find Visual Studio 20@var{xx} on the Start Menu, click,
+right click on @label{Developer Command Prompt for VS20@var{xx}}, find
+@label{More}, right click, and select @label{Open file location}.  In
+the instance of File Explorer that opens, find the @label{Developer
+Command Prompt} shortcut, right click, and select @label{Properties};
+the @label{Target} on the @label{Shortcut} tab should contain the proper
+path for the batch file.
+
+@node ``install'' Programs
+@unnumberedsec ``install'' Programs
+
+If you have an executable @command{install} program, you may get an
+error message to the effect of
+
+@example
+cannot execute: The requested operation requires elevation
+@end example
+
+@noindent
+while running @command{configure} without elevated privileges on Windows
+Vista or later with User Account Control (UAC) enabled.  If UAC is
+enabled, the system thinks executable programs whose names contain
+``install'', ``patch'', ``update'', and similar always require elevated
+privilege, and will refuse to run them without this privilege.
+
+If this happens, @command{configure} will simply use the
+@command{install-sh} script included with the
+@command{units} distribution.  But if for some reason you wish to use
+your version of @command{install}, there are several ways to do so.
+
+@node Running with Administrative Privilege
+@unnumberedsubsec Running with Administrative Privilege
+
+The easiest solution is to do the configure with a shell with
+administrative privilege, as discussed in
+@ref{Administrative Privilege}.
+After installation, testing should be done using a shell without
+elevated privilege.
+
+@node Providing a Manifest File
+@unnumberedsubsec Providing a Manifest File
+
+An alternative is to tell UAC that elevated privilege is not required.
+To do this, create a manifest file containing
+@example
+@group
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <!-- Tell UAC that administrative privilege is not needed -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>
+@end group
+@end example
+
+@noindent
+name it @file{install.exe.manifest}, and place it in the same directory as
+install.exe.  Sometimes this has no effect; if this happens, adjust the
+modification times of the manifest and executable so they match.
+
+The procedure is discussed at @url{https://github.com/bmatzelle/gow/issues/156},
+and a similar discussion for GNU patch is given at
+@url{http://math.nist.gov/oommf/software-patchsets/patch_on_Windows7.html}.
+
+@noindent
+Last access: 16 May 2016
+
+@node Embedding a Manifest in the install Program
+@unnumberedsubsec Embedding a Manifest in the install Program
+
+If you are using MS Visual Studio, an alternative to having the manifest
+file in the executable directory is to embed the manifest in the
+executable using the manifest tool @command{mt.exe}, obviating the need
+to worry about the time stamps of the files.  This is discussed in NIST
+link above; if the command is run from the shell, the semicolon must be
+escaped:
+
+@example
+mt -manifest install.exe.manifest -outputresource:install.exe@backslashchar{};1
+@end example
+
+@noindent
+Microsoft describe manifests at
+@url{https://msdn.microsoft.com/en-us/library/bb756929.aspx}.
+
+The Code Project also discusses UAC awareness:
+@url{http://www.codeproject.com/Articles/17968/Making-Your-Application-UAC-Aware}.
+
+@node Fine Tuning @file{Makefile}
+@unnumbered Fine Tuning @file{Makefile}
+
+@node Behavior of @env{PAGER}
+@unnumberedsec Behavior of @env{PAGER}
+
+The MKS versions of @command{more} and @command{less} do not recognize
+@option{+}@var{n} as an option to display a file beginning at line
+@var{n}, so @w{@samp{help @var{unit}}} from the @command{units} prompt
+will fail.  If @command{configure} is able to detect the Toolkit by
+running @command{mksinfo},
+
+@example
+-DHAVE_MKS_TOOLKIT
+@end example
+
+@noindent
+is added to the @code{DEFS} in Makefile.  If you have the MKS Toolkit
+and it somehow is not detected, you should add this manually.
+
+@node MKS @command{make} and Suffix Rules
+@unnumberedsec MKS @command{make} and Suffix Rules
+
+The MKS version of @command{make} ignores suffix rules in @file{Makefile} unless
+the line
+
+@example
+.POSIX:
+@end example
+
+@noindent
+appears in @file{Makefile} before any suffix rules.  This target is also
+required for the currency updater @command{units_cur} to run properly from
+@file{Makefile}.  The configure script attempts to detect the Toolkit by
+running mksinfo, and if this succeeds, the @code{.POSIX} target is
+added.  If you have the MKS Toolkit and it somehow is not detected, you
+should add this line manually.
+
+@node Install Program
+@unnumberedsec Install Program
+
+If the @env{PATH} at shell invocation uses the backslash as the path
+separator, and you have a BSD-compatible @command{install} program that
+is detected by @command{configure}, the backslashes may be removed,
+giving an incorrect @file{Makefile} entry something like
+
+@example
+INSTALL = c:usrlocalbin/install.exe -c
+@end example
+
+@noindent
+Add the slashes to get
+
+@example
+INSTALL = c:/usr/local/bin/install.exe -c
+@end example
+
+@noindent
+If you will always want to use the same installation program, you can
+specify it with the @env{INSTALL} variable---@pxref{Configuring @command{configure}}.
+
+Giving a @env{PATH} with forward slashes in a file given by @env{ENV}
+will have no effect because configure unsets that variable, and the file
+will not be read.
+
+@node Icons and File Association
+@unnumbered Icons and File Association
+
+Two icons are provided: @file{unitsfile.ico} and @file{unitsprog.ico}.
+The former is made the default icon for @command{units} data files, and
+the latter is embedded in the executable file by the build process.  The
+latter also may be useful if you wish to create a shortcut to the
+@command{units} program.  Both icons are copied to the same directory as
+the @command{units} data files.
+
+The installation process associates @command{units} data files with the
+MKS graphical @command{vi} editor @command{viw}; double-clicking on the
+file icon opens the file for editing.  The encoding is set to UTF-8.
+
+@node MKS @command{units}
+@unnumbered MKS @command{units}
+
+The MKS Toolkit includes a very old version of @command{units}; if the
+MKS executable directory is earlier in @env{PATH} than the installation
+directory for GNU @command{units}, a command-line invocation will run
+the MKS version.  To ensure that you run GNU @command{units}, either
+change @env{PATH} so that GNU @command{units} is found first, or create
+an alias for GNU @command{units}.
+
+@node Currency Definitions Updater
+@unnumbered Currency Definitions Updater
+
+The script @command{units_cur} is used to update currency
+definitions; it requires Python (available from
+@url{https://www.python.org/}).
+
+@node Installing Python
+@unnumberedsec Installing Python
+
+If you want to use the currency updater, install Python if it is not
+already installed; ensure that Python is installed @emph{before} running
+@command{configure}.  If you need to install Python, unless you have (or
+anticipate having) applications that depend on @w{Python 2}, the best
+choice is probably to install @w{Python 3}.
+
+Python's location must be included in @env{PATH} so the shell can find
+it; the Python installer usually offers to do this.
+
+When you first run @command{units_cur}, you may get a complaint about
+a missing module; for example,
+
+@codequoteundirected on
+@example
+ModuleNotFoundError: No module named 'requests'
+@end example
+@codequoteundirected off
+
+@noindent
+If so, you will need to install the missing module.  The easiest way to
+do this is with the @command{pip} command; for example,
+
+@example
+pip install requests
+@end example
+
+@noindent
+If you have @w{Python 2.7.9} or later or @w{Python 3.4} or later, you
+should have @command{pip}, though you may need to upgrade to the latest
+version.  If you do not have @command{pip}, you will need to install it
+manually; see the Python documentation or the Python website for
+instructions on how to do this.
+
+@node Python and @command{configure}
+@unnumberedsec Python and @command{configure}
+
+The complete pathname in @file{Makefile} may contain backslashes; for example,
+
+@example
+PYTHON = C:\Program Files\Python\Python37/python.exe
+@end example
+
+@noindent
+or
+
+@example
+PYTHON = C:\Progra~1\Python\Python37/python.exe
+@end example
+
+@noindent
+The build will fail unless the backslashes are changed to forward
+slashes; for example,
+
+@example
+PYTHON = C:/Progra~1/Python/Python37/python.exe
+@end example
+
+The backslashes can be avoided by passing @env{PYTHON} to
+@command{configure} at invocation, or by specifying it in
+@file{config.site}, e.g.,
+
+@example
+PYTHON=C:/Progra~1/Python/Python37/python.exe
+@end example
+
+@noindent
+A disadvantage is that if the installation directory changes with a
+future version of Python, @file{config.site} will need to be manually
+updated. A better approach is to give the normal Unix/Linux pathname:
+
+@example
+PYTHON=/usr/bin/python
+@end example
+
+@noindent
+This file need not exist; it simply tells the shell to use Python.  Do
+not include the volume specifier (e.g., @code{C:}) or the @code{.exe}
+extension; if you do, the shell will assume that the path @emph{does}
+exist, and will complain that it cannot find it.
+
+@node Running the Currency Updater
+@unnumbered Running the Currency Updater
+
+@node Updating from the Command Line
+@unnumberedsec Updating from the Command Line
+
+If the location of @command{units_cur} is on your @env{PATH}, you can
+update the currency definitions by entering @samp{units_cur} from the
+command line; you will need elevated permission if you lack write
+permission on the file.
+
+Reliable free sources of currency exchange rates have been annoyingly
+ephemeral, sometimes causing update attempts to fail.  Accordingly,
+several different sources are now supported---see the units manual for
+details.
+
+@node Automatic Updates
+@unnumberedsec Automatic Updates
+
+The easiest way to keep definitions updated is to create an entry in the
+Windows Task Scheduler.  The Task Scheduler is fussy about the format
+for the action, which must be an executable file; an entry might look
+something like
+
+@example
+C:\Windows\py.exe "C:\usr\local\bin\units\units_cur"
+@end example
+
+@noindent
+if the Python launcher is in @file{C:\Windows} and the script is in
+@file{C:\usr\local\bin}.
+
+@bye

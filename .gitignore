@@ -1,0 +1,11 @@
+###############################################################################
+# Discard all build, make and configure files 
+*.o
+*.wasm
+a.out.*
+config.log
+config.status
+units
+units.1
+units_cur_inst
+Makefile

@@ -1,0 +1,327 @@
+﻿\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename UnitsWin.info
+@finalout
+@setchapternewpage off
+@firstparagraphindent none
+@set EDITION 2.1
+@set VERSION 2.21
+@set OSVERSION 10
+@set TKVERSION 10.2
+@set VSVERSION 2015
+@set BUILDDATE @w{12 November} 2020
+@c %**end of header
+
+@copying
+This manual is for building GNU @command{units} (version @value{VERSION})
+with Microsoft Visual Studio on Microsoft Windows.
+
+Copyright @copyright{} 2016--2020 Free Software Foundation, Inc.
+
+@end copying
+
+@titlepage
+@title @w{Building and Installing} @w{GNU @command{units}} on @w{Microsoft Windows} with @w{Microsoft Visual Studio}
+@subtitle Edition @value{EDITION} for @command{units} Version @value{VERSION}
+@author Jeff Conrad
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+@contents
+
+@iftex
+@headings off
+@everyheading Building @command{units} on Windows using Microsoft Visual Studio @| @| @thispage
+@end iftex
+
+@macro label {text}
+@w{@sansserif{\text\}}
+@end macro
+
+@node Preface
+@unnumbered Preface
+
+This manual covers building and installing GNU @command{units} on
+Windows, using Microsoft Visual Studio from the Windows command prompt.
+You may be able to import @file{Makefile.Win} into the Visual Studio
+IDE, but that is beyond the scope of this document.
+
+If you have Unix-like utilities, you may be able to build and install in
+much the same manner as on most Unix-like systems, perhaps with a few
+minor adjustments.  Versions 2.12 and earlier were built using Microsoft
+Visual C/C++ 6.0, Visual Studio Express 9.0 and 10.0, and the MKS
+Toolkit version 9.6 under Windows XP, SP3.  Version @value{VERSION} was
+built using Microsoft Visual Studio @value{VSVERSION} and the MKS
+Toolkit version @value{TKVERSION} on
+@w{Windows @value{OSVERSION}}---@pxref{Top,,,UnitsMKS,UnitsMKS} for the
+details.
+
+A Windows binary distribution is available on the project website; the
+resulting installation is essentially the same as that using
+@file{Makefile.Win}, and usually can be achieved with less effort.
+
+The most recent build was for @command{units} version @value{VERSION},
+using Microsoft Visual Studio @value{VSVERSION} on
+Microsoft Windows Professional @value{OSVERSION} on @value{BUILDDATE}.
+
+  --- Jeff Conrad (@email{jeff_conrad@@msn.com}) @value{BUILDDATE}
+
+@node Building without Unix-Like Utilities
+@unnumbered Building from the Windows Command Prompt
+
+If you have Microsoft Visual Studio but don't have Unix-like utilities,
+you should be able to build and install @command{units} from the Windows
+command prompt using @file{Makefile.Win}:
+
+@example
+@group
+nmake /f Makefile.Win
+nmake /f Makefile.Win install
+@end group
+@end example
+
+@noindent
+The build requires that many environment variables be properly set;
+the easiest way to do this is to select @label{Developer Command Prompt}
+in the Visual Studio folder on the Start menu, and then change to the
+@command{units} source directory.
+
+If you install in the default location, you'll probably require elevated
+privileges; the easiest way to do this is to right-click on
+@label{Developer Command Prompt} in the Visual Studio folder on the
+Start menu, and select @label{Run as administrator}.
+
+By default, the units executable and data files are placed in the
+directory given by @code{%ProgramFiles%\GNU\units}; in most cases, this is
+@w{@file{C:\Program Files\GNU\units}}.
+
+You can preview the installation directories with
+
+@example
+nmake /f Makefile.Win showdest
+@end example
+
+@noindent
+If the destination directories don't exist, they will be created during
+installation.  You can change these locations by editing @file{Makefile.Win}.
+
+If you want to run units from a command prompt or from the Start Menu
+Run box, you can add the installation directory to the @env{PATH}
+environment variable.  Alternatively, you can create a shortcut to the
+program and place it in a convenient location.
+
+@node Icons and File Association
+@unnumbered Icons and File Association
+
+The installation process associates @command{units} data files with the
+@command{notepad} editor; double-clicking on the file icon opens the
+file for editing.  The installation process makes @file{unitsfile.ico}
+the default icon for these files.  An additional icon file,
+@file{unitsprog.ico}, is embedded in the executable file as part of the
+build process; this icon also may be useful if you wish to create a
+shortcut to the @command{units} program.  Both icons are copied to the
+@command{units} installation directory.
+
+@node Currency Definitions Updater
+@unnumbered Currency Definitions Updater
+
+The script @command{units_cur.py} can be used to update currency
+definitions (if your system hides file extensions, this script will
+display as @command{units_cur}).  The script requires Python (available from
+@url{https://www.python.org/}).
+
+@node Installing Python
+@unnumberedsec Installing Python
+
+If you want to use the currency updater, install Python if it is not
+already installed.  If you need to install Python, unless you have (or
+anticipate having) applications that depend on @w{Python 2}, the best
+choice is probably to install @w{Python 3}.
+
+After installing Python, you should be able to run
+@command{units_cur.py} using the shortcut on the Start Menu, or if you
+have added the units installation directory to your @env{PATH}, from a
+command-prompt window.
+
+When you first run @command{units_cur.py}, you may get a complaint about
+a missing module; for example
+
+@codequoteundirected on
+@example
+ModuleNotFoundError: No module named 'requests'
+@end example
+@codequoteundirected off
+
+@noindent
+If so, you will need to install the missing module.  The easiest way to
+do this is with the @command{pip} command; for example
+
+@example
+pip install requests
+@end example
+
+@noindent
+If you have @w{Python 2.7.9} or later or @w{Python 3.4} or later, you
+should have @command{pip}, though you may need to upgrade to the latest
+version.  If you do not have @command{pip}, you will need to install it
+manually; see the Python documentation or the Python website for
+instructions on how to do this.
+
+@node Configuring @command{units_cur.py}
+@unnumberedsec Configuring @command{units_cur.py}
+
+If you want to run the currency-update script from the command prompt
+without changing to the program installation directory, you will need to
+modify @file{units_cur.py} to give the full pathname of the output file
+currency.units, i.e., change
+
+@codequoteundirected on
+@example
+outfile = 'currency.units'
+@end example
+@codequoteundirected off
+
+@noindent
+to
+
+@codequoteundirected on
+@example
+outfile = '@var{installation_directory}/currency.units'
+@end example
+@codequoteundirected off
+
+@noindent
+For the default installation directory on a 64-bit system, this would be
+
+@codequoteundirected on
+@example
+outfile = 'C:/Program Files/GNU/units/currency.units'  
+@end example
+@codequoteundirected off
+
+@noindent
+The safest approach is to run
+
+@example
+nmake /f Makefile.Win showdest
+@end example
+
+@noindent
+to get the destination directory.  Be sure to use forward slashes in the
+pathname to avoid confusing Python.  The best approach is to modify
+@file{units_cur.py} before installation.
+
+If you add @code{.py} to the @env{PATHEXT} environment variable, you can
+simply type @command{units_cur} to run the updater from a command-prompt
+window.  You can do this from the command prompt by typing
+
+@example
+set PATHEXT=%PATHEXT%;.py
+@end example
+
+@noindent
+but you'll need to do this with every new instance.  You can make a
+permanent change by adding @code{;.py} to @env{PATHEXT} from the
+Advanced tab of the System dialog: click the `Environment Variables'
+button, find @env{PATHEXT} in either the list of User variables or the
+list of System variables; click the `Edit' button, make the change, and
+click `OK'.
+
+@node Example
+@unnumberedsec Example
+
+If you are installing units in the default location
+of @file{C:/Program Files/GNU/units} on a 64-bit system, the
+process would be to
+
+@enumerate
+@item
+Build the executable by running
+
+@example
+nmake /f Makefile.Win
+@end example
+
+@item
+Confirm the installation location by running
+
+@example
+nmake /f Makefile.Win showdest
+@end example
+
+It is assumed that the program will be installed in a subdirectory of
+the standard location for executables (typically,
+@w{@file{C:\Program Files}} on a 64-bit system),
+and a warning is given
+if this directory does not exist.  Ignore the warning if you are
+intentionally installing in another location.
+
+@item
+If necessary, modify @command{units_cur.py} so that the output file is given by
+
+@codequoteundirected on
+@example
+outfile = '@var{installation_directory}/currency.units'
+@end example
+@codequoteundirected off
+
+@noindent
+By default, this will usually be
+
+@codequoteundirected on
+@example
+outfile = 'C:/Program Files/GNU/units/currency.units'
+@end example
+@codequoteundirected off
+
+@item
+Install the files by running
+
+@example
+nmake /f Makefile.Win install
+@end example
+
+@item
+Ensure that @file{currency.units} is writable by ordinary users.  The
+installation should do this automatically, but if for some reason it
+does not, set permissions manually by adding `Modify' permission for the
+appropriate groups (typically `Power Users' and `Users')
+
+@end enumerate
+
+@node Running the Currency Updater
+@unnumbered Running the Currency Updater
+
+@node Updating from a Command Prompt
+@unnumberedsec Updating from a Command Prompt
+
+If you have modified the currency-update script to give the full
+pathname of the output file @file{currency.units}, you can update the
+file by running @command{units_cur.py} from any instance of the Windows
+command prompt.
+
+Reliable free sources of currency exchange rates have been annoyingly
+ephemeral, sometimes causing update attempts to fail.  Accordingly,
+several different sources are now supported---see the units manual for
+details.
+
+@node Automatic Updates
+@unnumberedsec Automatic Updates
+
+The easiest way to keep currency values up to date is by having the
+Windows Task Scheduler run @command{units_cur.py} on a regular basis.
+The Task Scheduler is fussy about the format for the action, which must
+be an executable file; an entry might look something like
+
+@example
+C:\Windows\py.exe "C:\Program Files\GNU\units\units_cur.py"
+@end example
+
+@noindent
+if the Python launcher is in @file{C:\Windows} and the script is in
+@file{C:\Program Files\GNU\units}.  The program must start in the
+@command{units} installation directory; the starting directory must be
+specified @emph{without} quotes.
+
+@bye

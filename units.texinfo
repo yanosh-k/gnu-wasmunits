@@ -1,0 +1,4869 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename units.info
+@settitle Units: A Unit Conversion Program and Scientific Calculator
+@finalout
+@setchapternewpage off
+@firstparagraphindent none
+@set EDITION 2.18
+@set VERSION 2.21
+@c %**end of header
+
+@c for AUTHOR section
+@c man program units
+
+@c ifman .\"
+@copying
+This manual is for GNU Units (version @value{VERSION}),
+which performs units conversions and units calculations.
+
+Copyright @copyright{} 1996, 1997, 1999, 2000, 2001, 2002, 2004, 2005, 2007,
+2011--2020 Free Software Foundation, Inc.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+Texts.
+@c end ifman
+@c noman
+A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+@end quotation
+@end copying
+@c end noman
+
+@defcodeindex op
+@syncodeindex op cp
+
+@c noman
+@dircategory Science
+@direntry
+* Units: (units).               Units conversion and scientific calculation.
+@end direntry
+
+@c end noman
+@c man .TH UNITS 1   "12 November 2020"
+@c man .SH NAME
+@c man units \(em unit conversion and calculation program
+@c man .\" hack to prevent very thick fraction bars with gropdf
+@c man .\" '-1' makes thickness proportional to type size
+@c man .if \n(.g .if t \Z@\D't -1'@
+@titlepage
+@title Units Conversion
+@subtitle Edition @value{EDITION} for @command{units} Version @value{VERSION}
+@author Adrian Mariano
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+@contents
+
+@iftex
+@headings off
+@everyheading Units Conversion @| @| @thispage
+@end iftex
+
+@ifnottex
+@node Top
+@top Units Conversion
+
+@c noman
+This manual describes the @command{units} command for units conversion and
+how you can use it as a powerful scientific calculator that keeps
+track of units.
+This is Edition @value{EDITION} of @cite{The Units Conversion Manual}
+for @command{units} Version @value{VERSION}.
+@c end noman
+@end ifnottex
+
+@menu
+* Overview::            What does @command{units} do?
+* Interactive Use::     How to use @command{units}.
+* Command Line Use::    How to use @command{units} non-interactively.
+* Unit Definitions::    What units are defined?
+* Unit Expressions::    Forming compound units.
+* Nonlinear Conversions:: Nonlinear unit conversions (e.g., temperature).
+* Unit Lists::		Conversion to sums of units (e.g., feet and inches).
+* Alternative Unit Systems::     CGS units and natural units
+* Logging Calculations:: Logging conversions and calculations in a file.
+* Invoking Units::      Command line options.
+* Scripting with Units:: Using units in scripts
+* Output Styles::       Different ways units can print the output. 
+* Defining Your Own Units::  Adding your own unit definitions
+* Numeric Output Format:: How to change the output format
+* Localization::        How to define and use regional unit names.
+* Environment Vars::    Environment variables used by @command{units}.
+* Data Files::          Descriptions and locations of units data files.
+* Unicode Support::     Support for Unicode (UTF-8).
+* Readline Support::    Unit name completion and editing.
+* Currency::            Updating currency exchange rates.
+* Database Syntax::     Summary of database command syntax.
+* GNU Free Documentation License::  License.
+* Index::               General index.
+@end menu
+
+@c noman
+@node Overview
+@chapter Overview of @command{units}
+@c end noman
+@c ifman
+@ignore
+@c '.PP' for consistency with spacing before other sections.
+.PP
+.SH SYNOPSIS
+.PP
+.CW units
+.RI [ options ]
+.RI [ from-unit
+.RI [ to-unit ]]
+.PP
+.SH DESCRIPTION
+@end ignore
+@c end ifman
+@html
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML' async></script>
+@end html
+
+
+The @command{units} program converts quantities expressed in various
+systems of measurement to their equivalents in other systems of
+measurement.  Like many similar programs, it can handle multiplicative
+scale changes. It can also handle nonlinear conversions such as
+Fahrenheit to
+@c man Celsius;
+@c noman
+Celsius;@footnote{But Fahrenheit to
+Celsius is linear, you insist.  Not so.  A transformation @math{T} is linear if
+@math{T(x+y)=T(x)+T(y)} and this fails for @math{T(x)=ax+b}.  This transformation is
+affine, but not linear. }
+@pxref{Temperature Conversions}.
+@c end noman
+@c man see \fITemperature Conversions\fP.
+The program can also perform conversions from and to sums of
+units, such as converting between meters and feet plus inches.
+
+Basic operation is simple: you enter the units that you want to convert
+@emph{from} and the units that you want to convert @emph{to}.
+You can use the program interactively with prompts, or you can use it
+from the command line.
+
+Beyond simple unit conversions, @command{units} can be used as a
+general-purpose scientific calculator that keeps track of units in its
+calculations.  You can form arbitrary complex mathematical expressions
+of dimensions including sums, products, quotients, powers, and even roots
+of dimensions.  Thus you can ensure accuracy and dimensional consistency
+when working with long expressions that involve many different units
+that may combine in complex ways; for an illustration,
+@c man see \fIComplicated Unit Expressions\fP.
+@c noman
+@pxref{Complicated Unit Expressions}.
+@c end noman
+
+The units are defined in an external data file.  You can use the
+extensive data file that comes with this program, or you can
+provide your own data file to suit your needs.  You can also use your
+own data file to supplement the standard data file.
+
+You can change the default behavior of @command{units} with various
+options given on the command line. @xref{Invoking Units}, for a
+description of the available options.
+
+@node Interactive Use
+@chapter Interacting with @command{units}
+@cindex interactive use
+
+To invoke @command{units} for interactive use, type @kbd{units} at your
+shell prompt.  The program will print something like this:
+
+@example
+@group
+Currency exchange rates from www.timegenie.com on 2014-03-05 
+2860 units, 109 prefixes, 85 nonlinear units
+
+You have:
+@end group
+@end example
+
+@noindent
+At the @w{@samp{You have:}} prompt, type the quantity and units that
+you are converting @emph{from}.  For example, if you want to convert ten
+meters to feet, type @kbd{10 meters}.  Next, @command{units} will print
+@w{@samp{You want:}}.  You should type the units you want to convert
+@emph{to}.  To convert to feet, you would type @kbd{feet}.  If the
+@command{readline} library was compiled in, then @key{tab} will
+complete unit names. @xref{Readline Support}, for more information
+about @command{readline}.  To quit the program type @kbd{quit} or
+@kbd{exit} at either prompt.  
+
+The result will be displayed in two ways.  The first line of output,
+which is marked with a @samp{*} to indicate multiplication, gives the
+result of the conversion you have asked for.  The second line of output,
+which is marked with a @samp{/} to indicate division, gives the inverse
+of the conversion factor.  If you convert 10 meters to feet,
+@command{units} will print
+
+@example
+@group
+    * 32.808399
+    / 0.03048
+@end group
+@end example
+
+@noindent
+which tells you that 10 meters equals about 32.8 feet.
+The second number gives the conversion in the opposite direction.
+In this case, it tells you that 1 foot is equal to about
+0.03 dekameters since the dekameter is 10 meters.
+It also tells you that 1/32.8 is about 0.03.
+
+The @command{units} program prints the inverse because sometimes it is a
+more convenient number.  In the example above, for example, the inverse
+value is an exact conversion: a foot is exactly 0.03048 dekameters.
+But the number given the other direction is inexact.
+
+If you convert grains to pounds, you will see the following:
+
+@example
+@group
+You have: grains
+You want: pounds
+        * 0.00014285714
+        / 7000
+@end group
+@end example
+
+@noindent
+   From the second line of the output you can immediately see that a grain
+is equal to a seven thousandth of a pound.  This is not so obvious from
+the first line of the output.
+If you find  the output format  confusing, try using the
+@option{--verbose} option:
+@cindex verbose output
+
+@example
+@group
+You have: grain
+You want: aeginamina
+        grain = 0.00010416667 aeginamina
+        grain = (1 / 9600) aeginamina
+@end group
+@end example
+
+@noindent
+If you request a conversion between units that measure reciprocal
+dimensions, then @command{units} will display the conversion results with an extra
+note indicating that reciprocal conversion has been done:
+@cindex reciprocal conversion
+
+@example
+@group
+You have: 6 ohms
+You want: siemens
+        reciprocal conversion
+        * 0.16666667
+        / 6
+@end group
+@end example
+
+@noindent
+Reciprocal conversion can be suppressed by using the @option{--strict} option.
+As usual, use
+the @option{--verbose} option to get more comprehensible output:
+@cindex verbose output
+@cindex strict conversion
+
+@example
+@group
+You have: tex
+You want: typp
+        reciprocal conversion
+        1 / tex = 496.05465 typp
+        1 / tex = (1 / 0.0020159069) typp
+
+You have: 20 mph
+You want: sec/mile
+        reciprocal conversion
+        1 / 20 mph = 180 sec/mile
+        1 / 20 mph = (1 / 0.0055555556) sec/mile
+@end group
+@end example
+
+@noindent
+If you enter incompatible unit types, the @command{units} program will
+print a message indicating that the units are not conformable and
+it will display the reduced form for each unit:
+@cindex incompatible units
+@cindex non-conformable units
+
+@example
+@group
+You have: ergs/hour
+You want: fathoms kg^2 / day
+conformability error
+        2.7777778e-11 kg m^2 / sec^3
+        2.1166667e-05 kg^2 m / sec
+@end group
+@end example
+
+@noindent
+If you only want to find the reduced form or definition of a unit,
+simply press @key{Enter} at the @w{@samp{You want:}} prompt.  Here is an
+example:
+
+@example
+@group
+You have: jansky
+You want:
+        Definition: fluxunit = 1e-26 W/m^2 Hz = 1e-26 kg / s^2
+@end group
+@end example
+
+@noindent
+The output from @command{units} indicates that the jansky is defined to be
+equal to a fluxunit which in turn is defined to be a certain combination
+of watts, meters, and hertz.  The fully reduced (and in this case
+somewhat more cryptic) form appears on the far right.
+
+Some named units are treated as dimensionless in some situations.
+These units include the radian and steradian.  These units will be
+treated as equal to 1 in units conversions.  Power is equal to torque
+times angular velocity.  This conversion can only be performed if the
+radian is dimensionless.
+
+@example
+@group
+You have: (14 ft lbf) (12 radians/sec)
+You want: watts
+        * 227.77742
+        / 0.0043902509
+@end group
+@end example
+
+@noindent
+It is also possible to compute roots and other non-integer powers of
+dimensionless units; this allows computations such as the altitude of
+geosynchronous orbit:
+
+@example
+@group
+You have: cuberoot(G earthmass / (circle/siderealday)^2) - earthradius
+You want: miles
+        * 22243.267
+        / 4.4957425e-05
+@end group
+@end example
+
+@noindent
+Named dimensionless units are not treated as dimensionless
+in other contexts.  They cannot be used as exponents
+so for example, @samp{meter^radian} is forbidden.
+@cindex dimensionless units
+
+@cindex @samp{?} to show conformable units
+@cindex conformable units, @samp{?} to show
+If you want a list of options you can type @kbd{?} at the
+@w{@samp{You want:}} prompt.  The program will display a list of named
+units that are conformable with the unit that you entered at the
+@w{@samp{You have:}} prompt above.  Conformable unit @emph{combinations}
+will not appear on this list.
+
+@cindex help
+
+Typing @kbd{help} at either prompt displays a short help message.
+You can also type @kbd{help} followed by a unit name.  This will
+invoke a pager on the units data base at the point where that unit
+is defined.  You can read the definition and comments that may
+give more details or historical information about the unit.  (You
+can generally quit out of the page by pressing @samp{q}.)
+
+Typing @kbd{search} @var{text} will display a list of all of the units
+whose names contain @var{text} as a substring along with their definitions.
+This may help in the case where you aren't sure of the right unit name.
+
+@node Command Line Use
+@chapter Using @command{units} Non-Interactively
+@cindex command-line unit conversion
+@cindex non-interactive unit conversion
+
+The @command{units} program can perform units conversions non-interactively
+from the command line.  To do this, type the command, type the original
+unit expression, and type the new units you want.  If a units
+expression contains non-alphanumeric characters, you may need to protect
+it from interpretation by the shell using single or double quote
+characters.
+
+If you type
+
+@example
+units "2 liters" quarts
+@end example
+
+@noindent
+then @command{units} will print
+
+@example
+@group
+    * 2.1133764
+    / 0.47317647
+@end group
+@end example
+
+@noindent
+and then exit.
+The output tells you that 2 liters is about 2.1 quarts, or alternatively that
+a quart is about 0.47 times 2 liters.
+
+@command{units} does not require a space between a numerical value and
+the unit, so the previous example can be given as
+
+@example
+units 2liters quarts
+@end example
+
+@noindent
+to avoid having to quote the first argument.
+
+If the conversion is successful, @command{units} will return success (zero)
+to the calling environment.  If you enter  non-conformable
+units, then @command{units} will print a message giving the reduced form of
+each unit and it will return failure (nonzero) to the calling environment.
+
+If the @option{--conformable} option is given, only one unit expression
+is allowed, and @command{units} will print all units conformable with
+that expression; it is equivalent to giving @kbd{?} at the
+@w{@samp{You want:}} prompt.  For example,
+
+@example
+@group
+units --conformable gauss
+B_FIELD   tesla
+Gs        gauss
+T         tesla
+gauss     abvolt sec / cm^2
+stT       stattesla
+statT     stattesla
+stattesla statWb/cm^2
+tesla     Wb/m^2
+@end group
+@end example
+
+@noindent
+If you give more than one unit expression with the
+@option{--conformable} option, the program will exit with an error
+message and return failure.  This option has no effect in interactive
+mode.
+
+If the @option{--terse} (@option{-t}) option is given with the
+@option{--conformable} option, conformable units are shown without
+definitions; with the previous example, this would give
+
+@example
+@group
+units --terse --conformable gauss
+B_FIELD
+Gs
+T
+gauss
+stT
+statT
+stattesla
+tesla
+@end group
+@end example
+
+@noindent
+When the @option{--conformable} option is not given and you invoke
+@command{units} with only one argument, @command{units} will print the
+definition of the specified unit.  It will return failure if the unit is
+not defined and success if the unit is defined.
+
+@node Unit Definitions
+@chapter Unit Definitions
+@cindex unit definitions
+
+The conversion information is read from a units data file that
+is called @file{definitions.units} and is usually located in
+the @file{/usr/share/units} directory.
+If you invoke @command{units} with the @option{-V} option, it will print
+the location of this file.
+The default
+file includes definitions for all familiar units, abbreviations and
+metric prefixes.  It also includes many obscure or archaic units.
+Many common spelled-out numbers (e.g., @samp{seventeen}) are recognized.
+
+Many constants of nature are defined, including these:
+
+@example
+pi          @r{ratio of circumference to diameter}
+c           @r{speed of light}
+e           @r{charge on an electron}
+force       @r{acceleration of gravity}
+mole        @r{Avogadro's number}
+water       @r{pressure per unit height of water}
+Hg          @r{pressure per unit height of mercury}
+au          @r{astronomical unit}
+k           @r{Boltzman's constant}
+mu0         @r{permeability of vacuum}
+epsilon0    @r{permittivity of vacuum}
+G           @r{Gravitational constant}
+mach        @r{speed of sound}
+@end example
+
+@noindent
+The standard data file includes atomic masses for all of the elements
+and numerous other constants.  Also included are the densities of
+various ingredients used in baking so that @samp{2@tie{}cups flour_sifted}
+can be converted to @samp{grams}.  This is not an exhaustive list.
+Consult the units data file to see the complete list, or to see the
+definitions that are used.
+
+@cindex measure, Imperial
+@cindex Imperial measure
+@cindex British Imperial measure
+The @samp{pound} is a unit of mass.  To get force, multiply by the
+force conversion unit @samp{force} or use the shorthand @samp{lbf}.
+(Note that @samp{g} is already taken as the standard abbreviation for
+the gram.)  The unit @samp{ounce} is also a unit of mass.  The fluid
+ounce is @samp{fluidounce} or @samp{floz}.  When British capacity
+units differ from their US counterparts, such as the British Imperial
+gallon, the unit is defined both ways with @samp{br} and @samp{us}
+prefixes.  Your locale settings will determine the value of the
+unprefixed unit.  Currency is prefixed with its country
+name: @samp{belgiumfranc}, @samp{britainpound}.
+
+@cindex units, lookup method
+
+When searching for a unit, if the specified string does not appear
+exactly as a unit name, then the @command{units} program will try to
+remove a trailing @samp{s}, @samp{es}.  Next units will replace a
+trailing @samp{ies} with @samp{y}.  If that fails,
+@command{units} will check for a prefix.  The database includes all
+of the standard metric prefixes.  Only one prefix is permitted per
+unit, so @samp{micromicrofarad} will fail.  However, prefixes can
+appear alone with no unit following them, so
+@samp{micro*microfarad} will work, as will @samp{micro microfarad}.
+
+@cindex prefixes
+
+To find out which units and prefixes are available, read the standard
+units data file, which is extensively annotated.
+
+@section English Customary Units
+
+@cindex volume measure, English customary
+English customary units differ in various ways in different
+regions.  In Britain a complex system of volume measurements featured
+different gallons for different materials such as a wine gallon and
+ale gallon that different by twenty percent.  This complexity was
+swept away in 1824 by a reform that created an entirely new gallon,
+the British Imperial gallon defined as the volume occupied by ten
+pounds of water.  Meanwhile in the USA the gallon is derived from the
+1707 Winchester wine gallon, which is 231 cubic inches.  These gallons
+differ by about twenty percent.  By default if @command{units} runs in
+the @samp{en_GB} locale you will get the British volume measures.  If
+it runs in the @samp{en_US} locale you will get the US volume
+measures.  In other locales the default values are the US
+definitions.  If you wish to force different definitions, then set the
+environment variable @env{UNITS_ENGLISH} to either @samp{US} or
+@samp{GB} to set the desired definitions independent of the locale.
+
+@cindex length measure, English customary
+@cindex length measure, UK
+@cindex survey measure, US
+@cindex US survey measure
+@cindex survey mile, US
+@cindex US survey foot
+@cindex State Plane Coordinate System, US
+@cindex US State Plane Coordinate System
+@cindex survey foot, US
+@cindex US survey mile
+@cindex mile, international
+@cindex international mile
+@cindex yard, international
+@cindex international yard
+Before 1959, the value of a yard (and other units of measure defined in
+terms of it) differed slightly among English-speaking countries.  In
+1959, Australia, Canada, New Zealand, the United Kingdom, the United
+States, and South Africa adopted the Canadian value of 1@tie{}yard =
+0.9144@tie{}m (exactly), which was approximately halfway between the
+values used by the UK and the US; it had the additional advantage of
+making 1@tie{}inch = 2.54@tie{}cm (exactly).  This new standard was
+termed the @dfn{International Yard}.  Australia, Canada, and the UK then
+defined all customary lengths in terms of the International Yard
+(Australia did not define the furlong or rod); because many US land
+surveys were in terms of the pre-1959 units, the US continued to define
+customary surveyors' units (furlong, chain, rod, and link) in terms of
+the previous value for the foot, which was termed the
+@dfn{US survey foot}.  The US defined a @dfn{US survey mile} as 5280 US
+survey feet, and defined a @dfn{statute mile} as a US survey mile.  The
+US values for these units differ from the international values by about
+2@tie{}ppm.
+
+The @command{units} program uses the international values for these
+units; the US values can be obtained by using either the @samp{US} or
+the @samp{survey} prefix.  In either case, the simple familiar
+relationships among the units are maintained, e.g., 1 @samp{furlong} =
+660 @samp{ft}, and 1 @samp{USfurlong} = 660 @samp{USft}, though the
+metric equivalents differ slightly between the two cases.
+The @samp{US} prefix or the @samp{survey} prefix can also be used to
+obtain the US survey mile and the value of the US yard prior to 1959,
+e.g., @samp{USmile} or @samp{surveymile} (but @emph{not}
+@samp{USsurveymile}).  To get the US value of the statute mile, use
+either @samp{USstatutemile} or @samp{USmile}.
+
+Except for distances that extend over hundreds of miles (such as in the
+US State Plane Coordinate System), the differences in the miles are
+usually insignificant:
+
+@example
+@group
+You have: 100 surveymile - 100 mile
+You want: inch
+        * 12.672025
+        / 0.078913984
+@end group
+@end example
+
+@noindent
+The pre-1959 UK values for these units can be obtained with the prefix
+@samp{UK}.
+
+In the US, the acre is officially defined in terms of the US survey
+foot, but @command{units} uses a definition based on the international
+foot.  If you want the official US acre use @samp{USacre} and
+similarly use @samp{USacrefoot} for the official US version of that
+unit.  The difference between these units is about 4 parts per million.
+
+@node Unit Expressions
+@chapter Unit Expressions
+@cindex unit expressions
+
+@menu
+* Operators::           The usual arithmetic operators, with a few extras
+* Sums and Differences of Units::  Adding and subtracting units
+* Numbers as Units::    A number is a dimensionless unit
+* Built-in Functions::    Trigonometric functions, logarithms, roots
+* Previous Result::	Inserting the result of the previous conversion
+* Complicated Unit Expressions::   A complicated example
+* Backwards Compatibility::   Alternate behavior for @samp{*} and @samp{-}
+@end menu
+
+@node Operators
+@section Operators
+@cindex operators
+
+You can enter more complicated units by combining units with operations
+such as multiplication, division, powers, addition, subtraction, and
+parentheses for grouping.  You can use the customary symbols for these
+operators when @command{units} is invoked with its default options.
+Additionally, @command{units} supports some extensions, including high
+priority multiplication using a space, and a high priority numerical
+division operator (@samp{|}) that can simplify some expressions.
+
+@cindex products of units
+@cindex quotients of units
+@cindex units quotients
+@cindex multiplication of units
+@cindex division of units
+@cindex operator, @samp{per}
+@cindex @samp{per} operator
+@cindex operator, space
+@cindex operator, star (@samp{*})
+@cindex star (@samp{*}) operator
+@cindex @samp{*} operator
+@cindex operator, slash (@samp{/})
+@cindex slash (@samp{/}) operator
+@cindex operator, solidus (@samp{/})
+@cindex solidus (@samp{/}) operator
+
+You multiply units using a space or an asterisk (@samp{*}).
+The next example shows both forms:
+
+@example
+@group
+You have: arabicfoot * arabictradepound * force
+You want: ft lbf
+        * 0.7296
+        / 1.370614
+@end group
+@end example
+
+@noindent
+You can divide units using the slash (@samp{/}) or with @samp{per}:
+
+@example
+@group
+You have: furlongs per fortnight
+You want: m/s
+        * 0.00016630986
+        / 6012.8727
+@end group
+@end example
+
+@cindex parentheses
+@noindent
+You can use parentheses for grouping:
+
+@example
+@group
+You have: (1/2) kg / (kg/meter)
+You want: league
+        * 0.00010356166
+        / 9656.0833
+@end group
+@end example
+
+@cindex operator precedence
+@cindex parentheses
+@cindex white space
+
+@noindent
+White space surrounding operators is optional, so the previous example
+could have used @samp{(1/2)kg/(kg/meter)}.  As a consequence, however,
+hyphenated spelled-out numbers (e.g., @samp{forty-two}) cannot be used;
+@samp{forty-two} is interpreted as @samp{40 - 2}.
+
+Multiplication using a space has a higher precedence
+than division using a slash and is evaluated left to right;
+in effect, the first @samp{/} character marks the beginning of the
+denominator of a unit expression.
+This makes it simple to enter a quotient with several terms in the
+denominator: @w{@samp{J / mol K}}.
+The @samp{*} and @samp{/} operators have the same precedence, and are
+evaluated left to right; if you multiply with @samp{*}, you must group
+the terms in the denominator with parentheses: @w{@samp{J / (mol * K)}}.
+
+@cindex fractions, numerical
+@cindex numerical fractions
+@cindex division of numbers
+@cindex operator, vertical bar (@samp{|})
+@cindex vertical bar (@samp{|}) operator
+@cindex @samp{|} operator
+
+The higher precedence of the space operator may not always be advantageous.
+For example, @w{@samp{m/s s/day}} is equivalent to
+@w{@samp{m / s s day}} and has dimensions of length per time cubed.
+Similarly, @w{@samp{1/2 meter}} refers to a unit of reciprocal length
+equivalent to 0.5/meter, perhaps not what you would intend if
+you entered that expression.  The get a half meter you would need to
+use parentheses: @w{@samp{(1/2) meter}}.
+The @samp{*} operator is convenient for multiplying a sequence of
+quotients.  For example, @w{@samp{m/s * s/day}} is equivalent to
+@samp{m/day}.  Similarly, you could write @w{@samp{1/2 * meter}} to get
+half a meter.
+
+The @command{units} program supports another option for numerical fractions:
+you can indicate division of @emph{numbers} with the vertical bar
+(@samp{|}), so if you wanted half a meter you could write
+@w{@samp{1|2 meter}}.
+You cannot use the vertical bar to indicate division of non-numerical
+units (e.g., @samp{m|s} results in an error message).
+
+@cindex powers
+@cindex exponent operator
+@cindex operator, caret (@samp{^})
+@cindex operator, (@samp{**})
+@cindex @samp{**} operator
+@cindex parentheses
+
+Powers of units can be specified using the @samp{^} character, as shown in
+the following example, or by simple concatenation of a unit and its
+exponent: @samp{cm3} is equivalent to @samp{cm^3};
+if the exponent is more than one digit, the @samp{^} is required.
+You can also use @samp{**} as an exponent operator.
+
+@example
+@group
+You have: cm^3
+You want: gallons
+        * 0.00026417205
+        / 3785.4118
+@end group
+@end example
+
+@noindent
+Concatenation only works with a single unit name: if you write @samp{(m/s)2},
+@command{units} will treat it as multiplication by 2.
+@cindex prefixes and exponents
+When a unit includes a prefix, exponent operators apply to the
+combination, so @samp{centimeter3} gives cubic centimeters.  If you
+separate the prefix from the unit with any multiplication operator (e.g.,
+@samp{centi meter^3}), the prefix is treated as a separate unit, so
+the exponent applies only to the unit without the prefix.  The second
+example is equivalent to @samp{centi * (meter^3)}, and gives a hundredth
+of a cubic meter, not a cubic centimeter.  The @command{units} program
+is limited internally to products of 99 units; accordingly, expressions
+like @samp{meter^100} or @samp{joule^34} (represented internally as
+@w{@samp{kg^34 m^68 / s^68}}) will fail.
+
+The @samp{|}
+operator has the highest precedence, so you can write the square root of
+two thirds as @samp{2|3^1|2}.
+The @samp{^} operator has the second highest precedence, and is
+evaluated right to left, as usual:
+
+@example
+@group
+You have: 5 * 2^3^2
+You want:
+        Definition: 2560
+@end group
+@end example
+
+@noindent
+With a dimensionless base unit, any dimensionless exponent is meaningful
+(e.g., @samp{pi^exp(2.371)}).  Even though angle is sometimes treated as
+dimensionless, exponents cannot have dimensions of angle:
+
+@example
+@group
+You have: 2^radian
+                 ^
+Exponent not dimensionless
+@end group
+@end example
+
+@noindent
+If the base unit is not dimensionless, the
+exponent must be a rational number @w{@var{p}/@var{q}}, and the
+dimension of the unit must be a power of @var{q}, so @samp{gallon^2|3}
+works but @samp{acre^2|3} fails.  An exponent using the slash (@samp{/})
+operator (e.g., @samp{gallon^(2/3)}) is also acceptable; the parentheses
+are needed because the precedence of @samp{^} is higher than that of
+@samp{/}.  Since @command{units} cannot represent dimensions with
+exponents greater than 99, a fully reduced exponent must have
+@w{@var{q} < 100}.  When raising a non-dimensionless unit to a power,
+@command{units} attempts to convert a decimal exponent to a rational
+number with @w{@var{q} < 100}.  If this is not possible
+@command{units} displays an error message:
+
+@example
+@group
+You have: ft^1.234
+Base unit not dimensionless; rational exponent required
+@end group
+@end example
+
+@noindent
+A decimal exponent must match its rational representation to machine
+precision, so @samp{acre^1.5} works but @samp{gallon^0.666} does not.
+
+@node Sums and Differences of Units
+@section Sums and Differences of Units
+@cindex sums and differences of units
+@cindex units, sums and differences
+@cindex operator, plus (@samp{+})
+@cindex plus (@samp{+}) operator
+@cindex @samp{+} operator
+@cindex operator, minus (@samp{-})
+@cindex minus (@samp{-}) operator, subtraction
+@cindex operator, hyphen (@samp{-}) as subtraction
+@cindex @samp{-} as subtraction operator
+
+@noindent
+You may sometimes want to add values of
+different units that are outside the SI.
+You may also wish to use @command{units} as a
+calculator that keeps track of units.  Sums of conformable units are written with
+the @samp{+} character, and differences with the @samp{-} character.
+@cindex sums of units
+@cindex addition of units
+@cindex subtraction of units
+@cindex differences of units
+
+@example
+@group
+You have: 2 hours + 23 minutes + 32 seconds
+You want: seconds
+        * 8612
+        / 0.00011611705
+@end group
+@end example
+
+
+@example
+@group
+You have: 12 ft + 3 in
+You want: cm
+        * 373.38
+        / 0.0026782366
+@end group
+@end example
+
+@example
+@group
+You have: 2 btu + 450 ft lbf
+You want: btu
+        * 2.5782804
+        / 0.38785542
+@end group
+@end example
+
+@noindent
+The expressions that are added or subtracted must reduce to identical
+expressions in primitive units, or an error message will be displayed:
+
+@example
+@group
+You have: 12 printerspoint - 4 heredium
+                                      ^
+Illegal sum of non-conformable units
+@end group
+@end example
+
+@cindex parentheses
+@noindent
+If you add two values of vastly different scale you may exceed the
+available precision of floating point (about 15 digits). The effect is
+that the addition of the smaller value makes no change to the larger
+value; in other words, the smaller value is treated as if it were zero.
+
+@example
+@group
+You have: lightyear + cm
+@end group
+@end example
+
+@noindent
+No warning is given, however.
+As usual, the precedence for @samp{+} and @samp{-} is lower than that of
+the other operators.
+A fractional quantity such as 2@tie{}1/2 cups can be given as
+@samp{(2+1|2) cups}; the parentheses are necessary because
+multiplication has higher precedence than addition.  If you omit the
+parentheses, @command{units} attempts to add @samp{2} and
+@samp{1|2 cups}, and you get an error message:
+
+@example
+@group
+You have: 2+1|2 cups
+                   ^
+Illegal sum or difference of non-conformable units
+@end group
+@end example
+
+@noindent
+The expression could also be correctly written as @samp{(2+1/2) cups}.
+If you write @samp{2@tie{}1|2 cups} the space is interpreted as
+@emph{multiplication} so the result is the same as @samp{1 cup}.
+
+The @samp{+} and @samp{-} characters sometimes appears in exponents like
+@samp{3.43e+8}.  This leads to an ambiguity in an expression like
+@samp{3e+2 yC}.  The unit @samp{e} is a small unit of charge, so this
+can be regarded as equivalent to @samp{(3e+2) yC} or @samp{(3 e)+(2 yC)}.
+This ambiguity is resolved by always interpreting @samp{+} and @samp{-} as part
+of an exponent if possible.
+
+@node Numbers as Units
+@section Numbers as Units
+@cindex numbers as units
+
+For @command{units}, numbers are just another kind of unit.  They can
+appear as many times as you like and in any order in a unit expression.
+For example, to find the volume of a box that is 2 ft by 3 ft by 12 ft
+in steres, you could do the following:
+
+@example
+@group
+You have: 2 ft 3 ft 12 ft
+You want: stere
+        * 2.038813
+        / 0.49048148
+
+You have: $ 5 / yard
+You want: cents / inch
+        * 13.888889
+        / 0.072
+@end group
+@end example
+@noindent
+And the second example shows how the dollar sign in the units conversion
+can precede the five.  Be careful:  @command{units} will interpret
+@samp{$5} with no space as equivalent to @samp{dollar^5}.
+
+@node Built-in Functions
+@section Built-in Functions
+@cindex functions, built in
+@cindex built-in functions
+
+Several built-in functions are provided: @samp{sin}, @samp{cos}, @samp{tan},
+@samp{asin}, @samp{acos}, @samp{atan},
+@samp{sinh}, @samp{cosh}, @samp{tanh},
+@samp{asinh}, @samp{acosh}, @samp{atanh},
+@samp{exp}, @samp{ln}, @samp{log},
+@samp{abs}, @samp{round}, @samp{floor}, @samp{ceil}, @samp{factorial},
+@samp{Gamma}, @samp{lnGamma}, @samp{erf}, and @samp{erfc};
+the function @samp{lnGamma} is the natural logarithm of the @samp{Gamma}
+function. 
+
+The @samp{sin}, @samp{cos}, and @samp{tan}
+functions require either a dimensionless argument or an argument with
+dimensions of angle.  
+
+@example
+@group
+You have: sin(30 degrees)
+You want:
+        Definition: 0.5
+
+You have: sin(pi/2)
+You want:
+        Definition: 1
+
+You have: sin(3 kg)
+                  ^
+Unit not dimensionless
+@end group
+@end example
+
+@noindent
+The other functions on the list require dimensionless arguments.  The
+inverse trigonometric functions return arguments with dimensions of
+angle.
+
+@cindex logs
+The @samp{ln} and @samp{log} functions give natural log and log base
+10 respectively.  To obtain logs for any integer base, enter the
+desired base immediately after @samp{log}.  For example, to get log
+base 2 you would write @samp{log2} and to get log base 47 you could
+write @samp{log47}.  
+
+@example
+@group
+You have: log2(32)
+You want: 
+        Definition: 5
+You have: log3(32)
+You want: 
+        Definition: 3.1546488
+You have: log4(32)
+You want: 
+        Definition: 2.5
+You have: log32(32)
+You want: 
+        Definition: 1
+You have: log(32)
+You want: 
+        Definition: 1.50515
+You have: log10(32)
+You want: 
+        Definition: 1.50515
+@end group
+@end example
+
+@cindex roots
+@cindex square roots
+If you wish to take roots of units, you may use the @samp{sqrt} or
+@samp{cuberoot} functions.  These functions require that the argument
+have the appropriate root.  You can obtain higher roots by using
+fractional exponents:
+
+@example
+@group
+You have: sqrt(acre)
+You want: feet
+        * 208.71074
+        / 0.0047913202
+
+You have: (400 W/m^2 / stefanboltzmann)^(1/4)
+You have:
+        Definition: 289.80882 K
+
+You have: cuberoot(hectare)
+                          ^
+Unit not a root
+@end group
+@end example
+
+@node Previous Result
+@section Previous Result
+@cindex previous result
+@cindex @samp{_} to use result of previous conversion
+
+@noindent
+You can insert the result of the previous conversion using the
+underscore (@samp{_}).  It is useful when you want to
+convert the same input to several different units, for example
+
+@example
+@group
+You have: 2.3 tonrefrigeration
+You want: btu/hr
+        * 27600
+        / 3.6231884e-005
+You have: _
+You want: kW
+        * 8.0887615
+        / 0.12362832
+@end group
+@end example
+
+@noindent
+Suppose you want to do some deep frying that requires an oil depth of
+2@tie{}inches.  You have 1/2 gallon of oil, and want to know the
+largest-diameter pan that will maintain the required depth.  The
+nonlinear unit @samp{circlearea} gives the @emph{radius} of the circle
+(@pxref{Other Nonlinear Units}, for a more detailed description) in SI
+units; you want the @emph{diameter} in @emph{inches}:
+
+@example
+@group
+You have: 1|2 gallon / 2 in
+You want: circlearea
+        0.10890173 m
+You have: 2 _
+You want: in
+        * 8.5749393
+        / 0.1166189
+@end group
+@end example
+
+@cindex white space
+
+@noindent
+In most cases, surrounding white space is optional, so the previous
+example could have used @samp{2_}.  If @samp{_} follows a non-numerical
+unit symbol, however, the space is required:
+
+@example
+@group
+You have: m_
+           ^
+Parse error
+@end group
+@end example
+
+@noindent
+When @samp{_} is followed by a digit, the operation is multiplication
+rather than exponentiation, so that @samp{_2}, is equivalent to
+@w{@samp{_ * 2}} rather than @samp{_^2}.
+
+You can use the @samp{_} symbol any number of times; for example,
+
+@example
+@group
+You have: m
+You want:
+        Definition: 1 m
+You have: _ _
+You want:
+        Definition: 1 m^2
+@end group
+@end example
+
+@noindent
+Using @samp{_} before a conversion has been performed (e.g.,
+immediately after invocation) generates an error:
+
+@set codequoteundirected
+@example
+@group
+You have: _
+          ^
+No previous result; '_' not set
+@end group
+@end example
+@clear codequoteundirected
+
+@noindent
+Accordingly, @samp{_} serves no purpose when @command{units} is invoked
+non-interactively.
+
+If @command{units} is invoked with the @option{--verbose} option
+(@pxref{Invoking Units}), the value of @samp{_} is not expanded:
+
+@example
+@group
+You have: mile
+You want: ft
+        mile = 5280 ft
+        mile = (1 / 0.00018939394) ft
+You have: _
+You want: m
+        _ = 1609.344 m
+        _ = (1 / 0.00062137119) m
+@end group
+@end example
+
+@noindent
+You can give @samp{_} at the @w{@samp{You want:}} prompt, but it
+usually is not very useful.
+
+@node Complicated Unit Expressions
+@section Complicated Unit Expressions
+@cindex unit expressions, complicated
+
+@html
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML' async></script>
+@end html
+
+@noindent
+The @command{units} program is especially helpful in ensuring accuracy
+and dimensional consistency when converting lengthy unit expressions.
+@c noman
+@cindex Darcy--Weisbach equation
+For example, one form of the Darcy--Weisbach fluid-flow equation is
+@tex
+ $$
+ \Delta P = {8 \over \pi^2} \rho fL { Q^2 \over d^5}
+ $$
+@end tex
+@ifinfo
+
+@example
+ Delta P = (8/pi^2) rho f L (Q^2 / d^5)
+@end example
+
+@end ifinfo
+@html
+\[ \Delta P = \frac{8}{\pi^2} \rho fL \frac{Q^2}{d^5}  \]
+@end html
+@noindent
+@ifinfo
+where @w{Delta P} is the pressure drop, rho
+@end ifinfo
+@ifnotinfo
+where @math{ \Delta P} is the pressure drop, @math{\rho}
+@end ifnotinfo
+is the mass density,
+@math{f} is the (dimensionless) friction factor, @math{L} is the length
+of the pipe, @math{Q} is the volumetric flow rate, and @math{d}
+is the pipe diameter.
+It might be desired to have the equation in the form
+@tex
+ $$
+   \Delta P = A_1 \rho fL {Q^2 \over d^5}
+ $$
+@end tex
+@html
+\[  \Delta P = A_1 \rho fL \frac{Q^2}{d^5} \]
+@end html
+@ifinfo
+
+@example
+   Delta P = A1 rho f L (Q^2 / d^5)
+@end example
+
+@end ifinfo
+@c end noman
+@c -----------------------------------
+@c nroff--assume neqn is not available
+@c -----------------------------------
+@c man .if t .ig ++
+@c man For example, one form of the Darcy-Weisbach fluid-flow equation is
+@c man .RS 5n
+@c man .PP
+@c man Delta \fIP\fP = (8 / pi)^2 (\fIrho\fP \fIfLQ\fP^2) / \fId\fP^5,
+@c man .RE
+@c man .PP
+@c man where Delta \fIP\fP is the pressure drop, \fIrho\fP is the mass density,
+@c man \fIf\fP is the (dimensionless) friction factor, \fIL\fP is the length
+@c man of the pipe, \fIQ\fP is the volumetric flow rate, and \fId\fP
+@c man is the pipe diameter.
+@c man It might be desired to have the equation in the form
+@c man .RS 5n
+@c man .PP
+@c man Delta \fIP\fP = A1 \fIrho\fP \fIfLQ\fP^2 / \fId\fP^5
+@c man .RE
+@c man .PP
+@c man .++
+@c -----
+@c troff
+@c -----
+@c man .if n .ig ++
+@c man .EQ
+@c man delim $$
+@c man .EN
+@c don't assume en dash is available
+@c man For example, one form of the Darcy\-Weisbach fluid-flow equation is
+@c man .RS 5n
+@c man .PP
+@c man .EQ
+@c man DELTA P = 8 over pi sup 2 rho fL Q sup 2 over d sup 5 ,
+@c man .EN
+@c man .RE
+@c man .PP
+@c man where $DELTA P$ is the pressure drop, $rho$ is the mass density,
+@c man $f$ is the (dimensionless) friction factor, $L$ is the length
+@c man of the pipe, $Q$ is the volumetric flow rate, and $d$
+@c man is the pipe diameter.
+@c man It might be desired to have the equation in the form
+@c man .RS 5n
+@c man .PP
+@c man .EQ
+@c man DELTA P = A sub 1 rho fL Q sup 2 over d sup 5
+@c man .EN
+@c man .RE
+@c man .PP
+@c man .EQ
+@c man delim off
+@c man .EN
+@c man .++
+@c
+@noindent
+that accepted the user's normal units; for typical units used in the US,
+the required conversion could be something like
+
+@example
+@group
+You have: (8/pi^2)(lbm/ft^3)ft(ft^3/s)^2(1/in^5)
+You want: psi
+        * 43.533969
+        / 0.022970568
+@end group
+@end example
+
+@cindex parentheses
+@noindent
+The parentheses allow individual terms in the expression to be entered naturally,
+as they might be read from the formula.  Alternatively, the
+multiplication could be done with the @samp{*} rather than a space;
+then parentheses are needed only around @samp{ft^3/s} because of its
+exponent:
+
+@example
+@group
+You have: 8/pi^2 * lbm/ft^3 * ft * (ft^3/s)^2 /in^5
+You want: psi
+        * 43.533969
+        / 0.022970568
+@end group
+@end example
+
+@noindent
+Without parentheses, and using spaces for multiplication, the previous
+conversion would need to be entered as
+
+@example
+@group
+You have: 8 lb ft ft^3 ft^3 / pi^2 ft^3 s^2 in^5
+You want: psi
+        * 43.533969
+        / 0.022970568
+@end group
+@end example
+
+@node Backwards Compatibility
+@section Backwards Compatibility: @samp{*} and @samp{-}
+@cindex backwards compatibility
+@cindex compatibility
+@cindex compatibility with earlier versions
+
+The original @command{units} assigned multiplication a higher
+precedence than division using the slash.  This differs from the
+usual precedence rules, which give multiplication and division equal
+precedence, and can be confusing for people who think
+of units as a calculator.
+
+The star operator (@samp{*}) included in this @command{units} program
+has, by default, the same precedence as division,
+and hence follows the usual precedence rules.  For backwards
+compatibility you can invoke @command{units}
+with the @option{--oldstar}
+option.  Then @samp{*} has a higher precedence than
+division, and the same precedence as multiplication using the space.
+
+@cindex @samp{-} as multiplication operator
+@cindex operator, hyphen (@samp{-}) as multiplication
+@cindex multiplication, hyphen
+@cindex hyphen as multiplication operator
+
+Historically, the hyphen (@samp{-}) has been used in technical
+publications to indicate products of units, and the original
+@command{units} program treated it as a multiplication operator.
+Because @command{units} provides
+several other ways to obtain unit products, and because @samp{-} is a
+subtraction operator in general algebraic expressions, @command{units}
+treats the binary @samp{-} as a subtraction operator by default.
+For backwards compatibility use the @option{--product} option, which
+causes @command{units} to treat the binary @samp{-} operator as a
+product operator.  When @samp{-} is a multiplication operator
+it has the same precedence as multiplication with a space, giving it a
+higher precedence than division.
+
+When @samp{-} is used as a unary operator it negates its operand.
+Regardless of the @command{units} options, if
+@samp{-} appears after @samp{(} or after
+@samp{+}, then it will act as a negation operator.  So you can always compute 20
+degrees minus 12 minutes by entering @samp{20@tie{}degrees + -12@tie{}arcmin}.
+You must use this construction when you define new units because you
+cannot know what options will be in force when your definition is
+processed.
+@cindex defining units with `-'
+
+@node Nonlinear Conversions
+@chapter Nonlinear Unit Conversions
+@cindex nonlinear unit conversions
+
+Nonlinear units are represented using functional notation.  They make
+possible nonlinear unit conversions such as temperature.
+
+@menu
+* Temperature Conversions::  Conversion between temperature scales
+* Other Nonlinear Units::    Ring size, wire gauge, abrasive grit size
+@end menu
+
+@node Temperature Conversions
+@section Temperature Conversions
+@cindex temperature conversions
+
+Conversions between temperatures are different from linear conversions
+between temperature @emph{increments}---see the example below.  The
+absolute temperature conversions are handled by units starting with
+@samp{temp}, and you must use functional notation.
+The temperature-increment conversions are done using units starting
+with @samp{deg} and they do not require functional notation.
+
+@example
+@group
+You have: tempF(45)
+You want: tempC
+        7.2222222
+
+You have: 45 degF
+You want: degC
+        * 25
+        / 0.04
+@end group
+@end example
+
+@noindent
+Think of @samp{tempF(@var{x})} not as a function but as a notation that
+indicates that @var{x} should have units of @samp{tempF} attached to
+it.  @xref{Defining Nonlinear Units}.  The first conversion shows that if it's 45
+degrees Fahrenheit outside, it's 7.2 degrees Celsius.  The second
+conversion indicates that a change of 45 degrees Fahrenheit corresponds
+to a change of 25 degrees Celsius.  The conversion from
+@samp{tempF(@var{x})} is to absolute temperature, so that
+
+@example
+@group
+You have: tempF(45)
+You want: degR
+        * 504.67
+        / 0.0019814929
+@end group
+@end example
+
+@noindent
+gives the same result as
+
+@example
+@group
+You have: tempF(45)
+You want: tempR
+        * 504.67
+        / 0.0019814929
+@end group
+@end example
+
+@noindent
+But if you convert @samp{tempF(@var{x})} to @samp{degC}, the output is
+probably not what you expect:
+
+@example
+@group
+You have: tempF(45)
+You want: degC
+        * 280.37222
+        / 0.0035666871
+@end group
+@end example
+
+@noindent
+The result is the temperature in K, because @samp{degC} is defined as
+@samp{K}, the Kelvin. For consistent results, use the @samp{temp@var{X}} units
+when converting to a temperature rather than converting a temperature
+increment.
+
+The @samp{tempC()} and @samp{tempF()} definitions are limited to
+positive absolute temperatures, and giving a value that would result in
+a negative absolute temperature generates an error message:
+
+@example
+@group
+You have: tempC(-275)
+                    ^
+Argument of function outside domain
+@end group
+@end example
+
+
+@node Other Nonlinear Units
+@section Other Nonlinear Units
+@cindex nonlinear units, other
+
+Some other examples of nonlinear units are numerous different ring
+sizes and wire gauges, the grit sizes used for abrasives, the decibel
+scale, shoe size, scales for the density of sugar (e.g., baume).
+The standard data file also supplies units for computing the area of a
+circle and the volume of a sphere.  See the standard units data file
+for more details.
+Wire gauges
+with multiple zeroes are signified using negative numbers where two
+zeroes is @samp{-1}.  Alternatively, you can use the synonyms @samp{g00},
+@samp{g000}, and so on that are defined in the standard units data file.
+@cindex wire gauge
+
+@example
+@group
+You have: wiregauge(11)
+You want: inches
+        * 0.090742002
+        / 11.020255
+
+You have: brwiregauge(g00)
+You want: inches
+        * 0.348
+        / 2.8735632
+
+You have: 1 mm
+You want: wiregauge
+        18.201919
+
+You have: grit_P(600)
+You want: grit_ansicoated
+        342.76923
+@end group
+@end example
+
+@noindent
+The last example shows the conversion from P graded sand paper,
+which is the European standard and may be marked ``P600'' on the back,
+to the USA standard.
+@cindex abrasive grit size
+
+You can compute the area of a circle using the nonlinear unit,
+@samp{circlearea}.  You can also do this using the circularinch or
+circleinch.  The next example shows two ways to compute the area of a
+circle with a five inch radius and one way to compute the volume of a
+sphere with a radius of one meter.
+@cindex circle, area of
+@cindex sphere, volume of
+
+@example
+@group
+You have: circlearea(5 in)
+You want: in2
+        * 78.539816
+        / 0.012732395
+
+You have: 10^2 circleinch
+You want: in2
+        * 78.539816
+        / 0.012732395
+
+You have: spherevol(meter)
+You want: ft3
+        * 147.92573
+        / 0.0067601492
+@end group
+@end example
+
+@noindent
+The inverse of a nonlinear conversion is indicated by prefixing a tilde
+(@samp{~}) to the nonlinear unit name:
+
+@example
+@group
+You have: ~wiregauge(0.090742002 inches)
+You want:
+        Definition: 11
+@end group
+@end example
+
+
+
+@noindent
+You can give a nonlinear unit definition without an argument or
+parentheses, and press @key{Enter} at the @w{@samp{You want:}} prompt to
+get the definition of a nonlinear unit; if the definition is not valid
+for all real numbers, the range of validity is also given.  If the
+definition requires specific units this information is also
+displayed:
+
+@example
+@group
+You have: tempC
+        Definition: tempC(x) = x K + stdtemp
+                    defined for x >= -273.15
+You have: ~tempC
+        Definition: ~tempC(tempC) = (tempC +(-stdtemp))/K
+                    defined for tempC >= 0 K
+You have: circlearea
+        Definition: circlearea(r) = pi r^2
+                    r has units m
+@end group
+@end example
+
+@noindent
+To see the definition of the inverse use the @samp{~} notation.  In
+this case the parameter in the functional definition will
+usually be the name of the unit.  Note that the inverse for
+@samp{tempC} shows that it requires units of @samp{K} in the
+specification of the allowed range of values.  
+Nonlinear unit conversions are described in more detail in
+@ref{Defining Nonlinear Units}.
+
+@node Unit Lists
+@chapter Unit Lists: Conversion to Sums of Units
+@cindex sums of units
+@cindex unit lists
+@cindex units, sums of
+
+@menu
+* Cooking Measure
+* Unit List Aliases
+@end menu
+
+Outside of the SI, it is sometimes desirable to convert a single
+unit to a sum of units---for example, feet to feet plus inches.
+The conversion @emph{from} sums of units was described in
+@ref{Sums and Differences of Units}, and is a simple matter of adding
+the units with the @samp{+} sign:
+
+@example
+@group
+You have: 12 ft + 3 in + 3|8 in
+You want: ft
+        * 12.28125
+        / 0.081424936
+@end group
+@end example
+
+@noindent
+Although you can similarly write a sum of units to convert @emph{to},
+the result will not be the conversion to the units in the sum, but
+rather the conversion to the particular sum that you have entered:
+
+@example
+@group
+You have: 12.28125 ft
+You want: ft + in + 1|8 in
+        * 11.228571
+        / 0.089058524
+@end group
+@end example
+
+@noindent
+The unit expression given at the @w{@samp{You want:}} prompt is
+equivalent to asking for conversion to multiples of
+@samp{1@tie{}ft + 1@tie{}in + 1|8@tie{}in}, which is 1.09375 ft, so the
+conversion in the previous example is equivalent to
+
+@example
+@group
+You have: 12.28125 ft
+You want: 1.09375 ft
+        * 11.228571
+        / 0.089058524
+@end group
+@end example
+
+@noindent
+In converting to a sum of units like miles, feet and inches, you
+typically want the largest integral value for the first unit, followed
+by the largest integral value for the next, and the remainder converted
+to the last unit.
+You can do this conversion easily with @command{units} using a special
+syntax for lists of units.  You must list the desired units in order
+from largest to smallest, separated by the semicolon (@samp{;})
+character:
+
+@example
+@group
+You have: 12.28125 ft
+You want: ft;in;1|8 in
+        12 ft + 3 in + 3|8 in
+@end group
+@end example
+
+@noindent
+The conversion always gives integer coefficients on the units in the
+list, except possibly the last unit when the conversion is not exact:
+
+@example
+@group
+You have: 12.28126 ft
+You want: ft;in;1|8 in
+        12 ft + 3 in + 3.00096 * 1|8 in
+@end group
+@end example
+
+@noindent
+The order in which you list the units is important:
+
+@example
+@group
+You have: 3 kg
+You want: oz;lb
+        105 oz + 0.051367866 lb
+
+You have: 3 kg
+You want: lb;oz
+        6 lb + 9.8218858 oz
+@end group
+@end example
+
+@noindent
+Listing ounces before pounds produces a technically correct result,
+but not a very useful one.  You must list the units in descending
+order of size in order to get the most useful result.
+
+Ending a unit list with the separator @samp{;}
+has the same effect as repeating the last
+unit on the list, so @samp{ft;in;1|8 in;} is equivalent to
+@samp{ft;in;1|8 in;1|8 in}.  With the example above, this gives
+
+@example
+@group
+You have: 12.28126 ft
+You want: ft;in;1|8 in;
+        12 ft + 3 in + 3|8 in + 0.00096 * 1|8 in
+@end group
+@end example
+
+@noindent
+in effect separating the integer and fractional parts of the
+coefficient for the last unit.  If you instead
+prefer to round the last coefficient to an integer
+you can do this with the @option{--round} (@option{-r}) option.
+With the previous example, the result is
+
+@example
+@group
+You have: 12.28126 ft
+You want: ft;in;1|8 in
+        12 ft + 3 in + 3|8 in (rounded down to nearest 1|8 in)
+@end group
+@end example
+
+@noindent
+When you use the @option{-r} option, repeating the last unit on the
+list has no effect (e.g., @samp{ft;in;1|8 in;1|8 in} is equivalent to
+@samp{ft;in;1|8 in}), and hence neither does ending a list with a
+@samp{;}.  With a single unit and the @option{-r} option, a terminal @samp{;}
+@emph{does} have an effect: it causes @command{units} to treat the
+single unit as a list and produce a rounded value for the single unit.
+Without the extra @samp{;}, the @option{-r} option has no effect on
+single unit conversions.  This example shows the output using the
+@option{-r} option:
+
+@example
+@group
+You have: 12.28126 ft
+You want: in
+        * 147.37512
+        / 0.0067854058
+
+You have: 12.28126 ft
+You want: in;
+        147 in (rounded down to nearest in)
+@end group
+@end example
+
+@noindent
+Each unit that appears in the list must be conformable with the first
+unit on the list, and of course the listed units must also be
+conformable with the unit that you enter at the @w{@samp{You have:}}
+prompt.
+
+@example
+@group
+You have: meter
+You want: ft;kg
+             ^
+conformability error
+        ft = 0.3048 m
+        kg = 1 kg
+
+You have: meter
+You want: lb;oz
+conformability error
+        1 m
+        0.45359237 kg
+@end group
+@end example
+
+@noindent
+In the first case, @command{units} reports the disagreement between
+units appearing on the list.  In the second case, @command{units}
+reports disagreement between the unit you entered and the desired
+conversion.  This conformability error is based on the first
+unit on the unit list.
+
+Other common candidates for conversion to sums of units are
+angles and time:
+
+@example
+@group
+You have: 23.437754 deg
+You want; deg;arcmin;arcsec
+    23 deg + 26 arcmin + 15.9144 arcsec
+
+You have: 7.2319 hr
+You want: hr;min;sec
+    7 hr + 13 min + 54.84 sec
+@end group
+@end example
+
+@noindent
+Some applications for unit lists may be less obvious.  Suppose that you
+have a postal scale and wish to ensure that it's accurate at 1@tie{}oz,
+but have only metric calibration weights.  You might try
+
+@example
+@group
+You have: 1 oz
+You want: 100 g;50 g; 20 g;10 g;5 g;2 g;1 g;
+        20 g + 5 g + 2 g + 1 g + 0.34952312 * 1 g
+@end group
+@end example
+
+@noindent
+You might then place one each of the 20@tie{}g, 5@tie{}g, 2@tie{}g, and
+1@tie{}g weights on the scale and hope that it indicates close to
+
+@example
+@group
+You have: 20 g + 5 g + 2 g + 1 g
+You want: oz;
+        0.98767093 oz
+@end group
+@end example
+
+@noindent
+Appending @samp{;} to @samp{oz} forces a one-line display that includes
+the unit; here the integer part of the result is zero, so it is not
+displayed.
+
+If a non-empty list item differs vastly in scale from the quantity from
+which the list is to be converted, you may exceed the available
+precision of floating point (about 15 digits), in which case you will
+get a warning, e.g.,
+
+@example
+@group
+You have: lightyear
+You want: mile;100 inch;10 inch;mm;micron
+        5.8786254e+12 mile + 390 * 100 inch (at 15-digit precision limit)
+@end group
+@end example
+
+
+@section Cooking Measure
+
+@noindent
+In North America, recipes for cooking typically measure ingredients by
+volume, and use units that are not always convenient multiples of each
+other.  Suppose that you have a recipe for 6 and you wish to make a
+portion for 1.  If the recipe calls for 2@tie{}1/2 cups of an
+ingredient, you might wish to know the measurements in terms of
+measuring devices you have available, you could use @command{units} and
+enter
+
+@example
+@group
+You have: (2+1|2) cup / 6
+You want: cup;1|2 cup;1|3 cup;1|4 cup;tbsp;tsp;1|2 tsp;1|4 tsp
+        1|3 cup + 1 tbsp + 1 tsp
+@end group
+@end example
+
+@noindent
+By default, if a unit in a list begins with fraction of the form
+1|@var{x} and its multiplier is an integer, the fraction is given as
+the product of the multiplier and the numerator; for example,
+
+@example
+@group
+You have: 12.28125 ft
+You want: ft;in;1|8 in;
+        12 ft + 3 in + 3|8 in
+@end group
+@end example
+
+@noindent
+In many cases, such as the example above, this is what is wanted, but
+sometimes it is not.  For example, a cooking recipe for 6 might call
+for 5@tie{}1/4 cup of an ingredient, but you want a portion for 2, and
+your 1-cup measure is not available; you might try
+
+@example
+@group
+You have: (5+1|4) cup / 3
+You want: 1|2 cup;1|3 cup;1|4 cup
+        3|2 cup + 1|4 cup
+@end group
+@end example
+
+@noindent
+This result might be fine for a baker who has a 1@tie{}1/2-cup measure
+(and recognizes the equivalence), but it may not be as useful to
+someone with more limited set of measures, who does want to do
+additional calculations, and only wants to know ``How many 1/2-cup
+measures to I need to add?''  After all, that's what was actually
+asked.  With the @option{--show-factor} option, the factor will not be
+combined with a unity numerator, so that you get
+
+@example
+@group
+You have: (5+1|4) cup / 3
+You want: 1|2 cup;1|3 cup;1|4 cup
+        3 * 1|2 cup + 1|4 cup
+@end group
+@end example
+
+@noindent
+A user-specified fractional unit with a numerator other than 1 is never
+overridden, however---if a unit list specifies @samp{3|4 cup;1|2 cup},
+a result equivalent to 1@tie{}1/2 cups will always be shown as
+@samp{2 * 3|4@tie{}cup} whether or not the @option{--show-factor} option
+is given.
+
+
+@section Unit List Aliases
+@cindex unit list aliases
+
+@noindent
+A unit list such as
+
+@example
+cup;1|2@tie{}cup;1|3@tie{}cup;1|4@tie{}cup;tbsp;tsp;1|2@tie{}tsp;1|4@tie{}tsp
+@end example
+
+@noindent
+can be tedious to enter.  The @command{units} program provides shorthand names
+for some common combinations:
+
+@example
+hms         @r{hours, minutes, seconds}
+dms         @r{angle: degrees, minutes, seconds}
+time        @r{years, days, hours, minutes and seconds}
+usvol       @r{US cooking volume: cups and smaller}
+ftin        @r{feet, inches and 1/8 inches}
+inchfine    @r{inches subdivided to 1/64 inch}
+@end example
+
+@noindent
+Using these shorthands, or @dfn{unit list aliases},
+you can do the following conversions:
+
+@example
+@group
+You have: anomalisticyear
+You want: time
+        1 year + 25 min + 3.4653216 sec
+You have: 1|6 cup
+You want: usvol
+        2 tbsp + 2 tsp
+@end group
+@end example
+
+@noindent
+You can define your own unit list aliases;
+@pxref{Defining Unit List Aliases}.
+
+You cannot combine a unit list alias with other units: it must appear
+alone at the @w{@samp{You want:}} prompt.
+
+You can display the definition of a unit list alias by entering it at
+the @w{@samp{You have:}} prompt:
+
+@example
+@group
+You have: dms
+        Definition: unit list, deg;arcmin;arcsec
+@end group
+@end example
+
+@noindent
+When you specify compact output with @option{--compact},
+@option{--terse} or @option{-t} and perform conversion to a unit list,
+@command{units} lists the conversion factors for each unit in the
+list, separated by semicolons.  
+
+@example
+@group
+You have: year
+You want: day;min;sec
+365;348;45.974678
+@end group
+@end example
+
+@noindent
+Unlike the case of regular
+output, zeros @emph{are} included in this output list:
+
+@example
+@group
+You have: liter
+You want: cup;1|2 cup;1|4 cup;tbsp
+4;0;0;3.6280454
+@end group
+@end example
+
+@node Alternative Unit Systems
+@chapter Alternative Unit Systems
+
+@menu
+* CGS Units::
+* Natural Units::
+* Prompt Prefix::              The prompt prefix shows specified CGS units
+@end menu
+
+@node CGS Units
+@section CGS Units
+@cindex CGS units, using
+
+@html
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML' async></script>
+@end html
+
+
+@menu
+* Specifying CGS Units::       How to specify the desired CGS units
+* CGS Units Systems::          The various CGS units systems
+* Conversions Between Systems:: Conversions between units in different systems
+@end menu
+
+The SI---an extension of the MKS (meter--kilogram--second) system---has
+largely supplanted the older CGS (centimeter--gram--second) system, but
+CGS units are still used in a few specialized fields, especially in
+physics where they lead to a more elegant formulation of Maxwell's equations.
+Conversions between SI and CGS involving mechanical units are
+straightforward, involving powers of 10 (e.g., @w{1 m = 100 cm}).
+Conversions involving electromagnetic units are more complicated, and
+@command{units} supports four different systems of CGS units: 
+electrostatic units (ESU), electromagnetic units (EMU), the
+Gaussian system and the Heaviside--Lorentz system. 
+The differences between these systems
+arise from different choices made for proportionality
+constants in electromagnetic equations.
+Coulomb's law gives electrostatic force between two
+charges separated by a distance
+@c noman
+@math{r}:
+@ifinfo
+@display
+
+F = k_C q_1 q_2 / r^2.
+
+@end display
+@end ifinfo
+@html
+\[ F = k_{\text{C}} \frac{q_1q^2}{r^2}. \]
+@end html
+@iftex
+@tex
+  $$
+  F = k_{\rm C} { {q_1 q_2} \over {r^2} }.
+  $$
+@end tex
+@end iftex
+@c end noman
+@c
+@c man .EQ
+@c man delim $$
+@c man .EN
+@c man .if n \fIr\fP:
+@c man .if t $r$:
+@c man .RS 5n
+@c man .PP
+@c man .if n \fIF\fP = \fIk\fP_C \fIq\fP_1\ \fIq\fP_2\ /\ \fIr\fP^2.
+@c man .if t \{
+@c man .EQ
+@c man F = k sub roman C { q sub 1 q sub 2} over r sup 2.
+@c man .EN
+@c man .\}
+@c man .RE
+@c man .PP
+
+@noindent
+Ampere's law gives the electromagnetic force per unit length
+between two current-carrying conductors separated by a distance
+@c noman
+@math{r}:
+@ifinfo
+@display
+
+F/l = 2 k_A I_1 I_2 / r.
+
+@end display
+@end ifinfo
+@html
+\[ \frac{F}{l} = 2 k_{\text{A}} \frac{I_1I_2}{r}.\]
+@end html
+@iftex
+@tex
+  $$
+  { F \over l } = 2 k_{\rm A} { {I_1 I_2} \over {r} } .
+  $$
+@end tex
+@end iftex
+@c end noman
+@c
+@c man .if n \fIr\fP:
+@c man .if t $r$:
+@c man .RS 5n
+@c man .PP
+@c man .if n \fIF\fP/\fIl\fP = 2 \fIk\fP_A \fII\fP_1\ \fII\fP_2\ /\ \fIr\fP.
+@c man .if t \{
+@c man .EQ
+@c man F over l = 2 k sub roman A { I sub 1 I sub 2 } over r .
+@c man .EN
+@c man .\}
+@c man .RE
+@c man .PP
+
+@noindent
+The two constants,
+@c noman
+@ifinfo
+@math{k_C} and @math{k_A},
+@end ifinfo
+@html
+\(k_{\text{C}}\) and \(k_{\text{A}}\),
+@end html
+@iftex
+@math{k_{\rm C}} and @math{k_{\rm A}},
+@end iftex
+are related by the square of the speed of light:
+@ifinfo
+k_A = k_C / c^2.
+@end ifinfo
+@html
+\(k_{\text{A}} = k_{\text{C}}/c^2\).
+@end html
+@iftex
+@math{k_{\rm A} = k_{\rm C} / c^{2}}.
+@end iftex
+@c end noman
+@c
+@c man .if n \fIk\fP_C and \fIk\fP_A,
+@c man .if t $k sub roman C$ and $k sub roman A$,
+@c man are related by the square of the speed of light:
+@c man .if n \fIk\fP_A\ =\ \fIk\fP_C\ /\ \fIc\fP^2.
+@c man .if t $k sub roman A = k sub roman C / c sup 2$.
+
+In the SI, the constants have dimensions, and an additional base unit,
+the ampere, measures electric current.  The CGS systems do not define
+new base units, but express charge and current as derived units in
+terms of mass, length, and time.  In the ESU system, the constant for
+Coulomb's law is chosen to be unity and dimensionless, which defines
+the unit of charge.  In the EMU system, the constant for Ampere's law
+is chosen to be unity and dimensionless, which defines a unit of
+current.  The Gaussian system usually uses the ESU units for charge
+and current; it chooses another constant so that the units for the
+electric and magnetic fields are the same.  The Heaviside--Lorentz
+system is ``rationalized'' so that factors of
+@c noman
+@math{4\pi}
+@c end noman
+@c 
+@c man .if n 4{pi}
+@c man .if t 4\(*p
+do not appear in
+Maxwell's equations.  The SI system is similarly rationalized, but the
+other CGS systems are not.  In the Heaviside--Lorentz (HLU) system the
+factor of
+@c noman
+@math{4\pi}
+@c end noman
+@c 
+@c man .if n 4{pi}
+@c man .if t 4\(*p
+appears in Coulomb's law instead; this system differs
+from the Gaussian system by factors of
+@c noman
+@math{\sqrt{4\pi}}.
+@c end noman
+@c
+@c man .if n the square root of 4{pi}
+@c man .if t \(sr\o'\[sqrtex]4'\o'\[sqrtex]\(*p'\^.
+
+The dimensions of electrical quantities in the various CGS systems are
+different from the SI dimensions for the same units;
+strictly, conversions between these systems and SI are not possible.
+But units in different systems relate to the same physical quantities,
+so there is a @emph{correspondence} between these units.
+The @command{units} program defines the units so that you can convert
+between corresponding units in the various systems.  
+
+@node Specifying CGS Units
+@subsection Specifying CGS Units
+@cindex CGS units, specifying
+@html
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML' async></script>
+@end html
+
+The CGS definitions involve
+@c noman
+@ifinfo
+cm^(1/2) and g^(1/2)
+@end ifinfo
+@html
+\(\text{cm}^{1/2}\) and \(\text{g}^{1/2}\)
+@end html
+@iftex
+@math {{\rm cm}^{1/2}} and @math{{\rm g}^{1/2}},
+@end iftex
+@c end noman
+@c
+@c man .if n cm^(1/2) and g^(1/2),
+@c man .if t cm$"" sup {1/2}$ and g$"" sup {1/2}$,
+@c man
+@c
+which is problematic because @command{units} does not normally support
+fractional roots of base units.  The @option{--units} (@option{-u})
+option allows selection of a CGS unit system and works around this
+restriction by introducing base units for the square roots of length
+and mass: @samp{sqrt_cm} and @samp{sqrt_g}.  The centimeter then
+becomes @samp{sqrt_cm^2} and the gram, @samp{sqrt_g^2}.  This allows
+working from equations using the units in the CGS system, and
+enforcing dimensional conformity within that system.  Recognized CGS
+arguments to the @option{--units} option are @samp{gauss[ian]},
+@samp{esu}, @samp{emu}, @samp{lhu}; the argument is case insensitive.
+You can also give @samp{si} which just enforces the default SI mode
+and displays @samp{(SI)} at the @w{@samp{You have:}} prompt to
+emphasize the units mode.  Some other types of units are also
+supported as described below.  Giving an unrecognized system generates
+a warning, and @command{units} uses SI units.
+
+The changes resulting from the @option{--units} option are actually
+controlled by the @env{UNITS_SYSTEM} environment variable.  If you
+frequently work with one of the supported CGS units systems, you may set
+this environment variable rather than giving the @option{--units} option
+at each invocation.  As usual, an option given on the command line
+overrides the setting of the environment variable. For example, if you would
+normally work with Gaussian units but might occasionally work with
+SI, you could set @env{UNITS_SYSTEM} to @samp{gaussian} and specify
+SI with the @option{--units} option.
+Unlike the argument to the @option{--units} option, the value of
+@env{UNITS_SYSTEM} @emph{is} case sensitive, so setting a value of
+@samp{EMU} will have no effect other than to give an error message and
+set SI units.
+
+The CGS definitions appear as conditional settings in the standard
+units data file, which you can consult for more information on how
+these units are defined, or on how to define an alternate units system.
+
+@node CGS Units Systems
+@subsection CGS Units Systems
+@cindex CGS Units Systems
+@cindex units systems, CGS
+@html
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_HTML' async></script>
+@end html
+
+The ESU system derives the electromagnetic units from its unit of
+charge, the statcoulomb,
+which is defined from 
+Coulomb's law.  The statcoulomb equals
+@c noman
+@ifinfo
+@w{dyne^(1/2) cm} or @w{cm^(3/2) g^(1/2) s^(-1)}.
+@end ifinfo
+@html
+\(\text{dyne}^{1/2}\text{cm}\) or
+\(\text{cm}^{3/2}\text{g}^{1/2}\text{s}^{-1}\).
+@end html
+@c
+@iftex
+@math{{\rm dyne}^{1/2}\,{\rm cm}} or @math{{\rm cm}^{3/2}\,{\rm g}^{1/2}\,{\rm s}^{-1}}.
+@end iftex
+@c end noman
+@c
+@c man .if n dyne^(1/2)\ cm, or cm^(3/2)\ g^(1/2)\ s^(\(mi1).
+@c man .if t $roman dyne sup {1/2} ^ roman cm$,
+@c man .if t or $roman cm sup {3/2} ^ roman g sup {1/2} ^ roman s sup {-1}$.
+The unit of current, the statampere, is @w{statcoulomb sec}, analogous to
+the relationship in SI.  Other electrical units are then derived in a
+manner similar to that for SI units; the units use the SI names prefixed
+by @samp{stat-}, e.g., @samp{statvolt} or @samp{statV}.  The prefix
+@samp{st-} is also recognized (e.g., @samp{stV}).
+
+The EMU system derives the electromagnetic units from its unit of current,
+the abampere, which is defined in terms of Ampere's law.  The abampere
+is equal to 
+@c noman
+@ifinfo
+dyne^(1/2) or @w{cm^(1/2) g^(1/2) s^(-1)}.
+@end ifinfo
+@html
+\(\text{dyne}^{1/2}\) or \(\text{cm}^{1/2}\text{g}^{1/2}\text{s}^{-1}\).
+@end html
+@c
+@iftex
+@math{{\rm dyne}^{1/2}}, or @math{{\rm cm}^{1/2}\,{\rm g}^{1/2}\,{\rm s}^{-1}}.
+@end iftex
+@c end noman
+@c
+@c man .if n dyne^(1/2), or cm^(1/2)\ g^(1/2)\ s^(\(mi1).
+@c man .if t $roman dyne sup {1/2}$,
+@c man .if t or $roman cm sup {1/2} ^ roman g sup {1/2} ^ roman s sup{-1}$.
+@c man .EQ
+@c man delim off
+@c man .EN
+The unit of charge, the abcoulomb, is
+@w{abampere sec}, again analogous to the SI relationship.
+Other electrical units are then derived in a
+manner similar to that for SI units; the units use the SI names prefixed
+by @samp{ab-}, e.g., @samp{abvolt} or @samp{abV}.  The magnetic field
+units include the gauss, the oersted and the maxwell. 
+
+The Gaussian units system, which was also known as the Symmetric
+System,
+uses the same charge and current units as the ESU system (e.g.,
+@samp{statC}, @samp{statA}); it differs by defining the magnetic field
+so that it has the same units as the electric field.  The resulting
+magnetic field units are the same ones used in the EMU system: the
+gauss, the oersted and the maxwell.
+
+The Heaviside--Lorentz system appears to lack named units.  We define
+five basic units, @samp{hlu_charge}, @samp{hlu_current}, @samp{hlu_volt}, @samp{hlu_efield} and
+@samp{hlu_bfield} for conversions with this system.  It is important to
+remember that with all of the CGS systems, the units may look the same
+but mean something different.  The HLU system and Gaussian systems
+both measure magnetic field using the same CGS dimensions, but the
+amount of magnetic field with the same units is different in the two
+systems.  
+
+@node Conversions Between Systems
+@subsection Conversions Between Different Systems
+
+The CGS systems define units that measure the same thing but may have
+conflicting dimensions.  Furthermore, the dimensions of the
+electromagnetic CGS units are never compatible with SI.
+But if you measure charge in two different systems you have measured the
+same physical thing, so there is a @emph{correspondence} between the
+units in the different systems, and @command{units} supports conversions
+between corresponding units.  When running with SI, @command{units}
+defines all of the CGS units in terms of SI.  When you select a CGS
+system, @command{units} defines the SI units and the other CGS system
+units in terms of the system you have selected.
+
+@example
+@group
+(Gaussian) You have: statA
+           You want: abA
+        * 3.335641e-11
+        / 2.9979246e+10
+(Gaussian) You have: abA
+           You want: sqrt(dyne)
+conformability error
+        2.9979246e+10 sqrt_cm^3 sqrt_g / s^2
+        1 sqrt_cm sqrt_g / s
+@end group
+@end example
+
+@noindent
+In the above example, @command{units} converts between the current
+units statA and abA even though the abA, from the EMU system, has
+incompatible dimensions.  This works because in Gaussian mode, the abA
+is defined in terms of the statA, so it does not have the correct
+definition for EMU; consequently, you cannot convert the abA to its EMU
+definition.
+
+One challenge of conversion is that because
+the CGS system has fewer base units, quantities that have different
+dimensions in SI may have the same dimension in a CGS system.  And
+yet, they may not have the same conversion factor.  For example, the
+unit for the @math{E} field and @math{B} fields are the same in the
+Gaussian system, but the conversion factors to SI are quite
+different.  This means that correct conversion is only possible if you
+keep track of what quantity is being measured.  You cannot convert
+statV/cm to SI without indicating which type of field the unit
+measures.  To aid in dimensional analysis, @command{units} defines
+various dimension units such as LENGTH, TIME, and CHARGE to be the
+appropriate dimension in SI.  The
+electromagnetic dimensions such as B_FIELD or E_FIELD may be useful
+aids both for conversion and dimensional analysis in CGS.  You
+can convert them to or from CGS in order to perform SI conversions
+that in some cases will not work directly due to dimensional incompatibilities.
+This example shows how the Gaussian system uses the same units for all
+of the fields, but they all have different conversion factors with
+SI. 
+
+@example
+@group
+(Gaussian) You have: statV/cm
+           You want: E_FIELD
+        * 29979.246
+        / 3.335641e-05
+@end group
+@group
+(Gaussian) You have: statV/cm
+           You want: B_FIELD
+        * 0.0001
+        / 10000
+@end group
+@group
+(Gaussian) You have: statV/cm
+           You want: H_FIELD
+        * 79.577472
+        / 0.012566371
+@end group
+@group
+(Gaussian) You have: statV/cm
+           You want: D_FIELD
+        * 2.6544187e-07
+        / 3767303.1
+@end group
+@end example
+
+@noindent
+The next example shows that the oersted cannot be converted directly
+to the SI unit of magnetic field, A/m, because the dimensions
+conflict.  We cannot redefine the ampere to make this work because
+then it would not convert with the statampere.  But you can still do
+this conversion as shown below.
+
+@example
+@group
+(Gaussian) You have: oersted
+           You want: A/m
+conformability error
+        1 sqrt_g / s sqrt_cm
+        29979246 sqrt_cm sqrt_g / s^2
+(Gaussian) You have: oersted
+           You want: H_FIELD
+        * 79.577472
+        / 0.012566371
+@end group
+@end example
+
+
+@node Natural Units
+@section Natural Units
+@cindex Natural units, using
+
+Like the CGS units, ``natural'' units are an alternative to the SI
+system used primarily physicists in different fields, with different
+systems tailored to different fields of study.  These
+systems are ``natural'' because the base measurements are defined
+using physical constants instead of arbitrary values such as the meter
+or second.  In different branches of physics, different physical constants
+are more fundamental, which has given rise to a variety of incompatible natural
+unit systems.
+
+The supported systems are the ``natural'' units (which seem to have no
+better name) used in high energy physics and cosmology, the Planck
+units, often used my scientists working with gravity, and the Hartree
+atomic units are favored by those working in physical chemistry and
+condensed matter physics.  
+
+You can select the various natural units using the @option{--units}
+option in the same way that you select the CGS units.  The ``natural''
+units come in two types, a rationalized system derived from the
+Heaviside--Lorentz units and an unrationalized system derived from the
+Gaussian system.  You can select these using @samp{natural} and
+@samp{natural-gauss} respectively.  For conversions in SI mode,
+several unit names starting with @samp{natural} are available.
+This ``natural'' system is defined by setting
+@c noman
+@math{\hbar},
+@c end noman
+@c
+@c man .if n {hbar},
+@c man .if t \[hbar],
+@math{c} and the Boltzman
+constant to 1.  Only a single base unit remains: the electron volt.  
+
+The Planck units exist in a variety of forms, and @command{units}
+supports two.  Both supported forms are rationalized, in that factors
+of
+@c noman
+@math{4\pi}
+@c end noman
+@c
+@c man .if n 4{pi}
+@c man .if t 4\(*p
+do not appear in Maxwell's equations.  However, Planck units
+can also differ based on how the gravitational constant is treated.
+This system is similar to the natural units in that @math{c},
+@c noman
+@math{\hbar},
+@c end noman
+@c
+@c man .if n {hbar},
+@c man .if t \[hbar],
+and
+Boltzman's constant are set to 1, but in this system, Newton's
+gravitational constant,
+@c noman
+@math{G},
+@c end noman
+@c
+@c man \fIG\fP
+is also fixed.  In the ``reduced'' Planck
+system,
+@c noman
+@math{8 \pi G=1}
+@c end noman
+@c
+@c man .EQ
+@c man delim $$
+@c man .EN
+@c man .if n 8{pi}\fIG\fP\ =\ 1
+@c man .if t $8 pi G = 1$
+whereas in the unreduced system
+@c noman
+@math{G = 1}.
+@c end noman
+@c
+@c man .if n \fIG\fP\ =\ 1.
+@c man .if t $G = 1$.
+The reduced system eliminates factors of
+@c noman
+@math{8 \pi}
+@c end noman
+@c
+@c man .if n 8{pi}
+@c man .if t 8\(*p
+@c man .EQ
+@c man delim off
+@c man .EN
+from the Einstein field equations for gravitation, so this is similar to
+the process of forming rationalized units to simplify Maxwell's equations.
+To obtain the unreduced system use the name @samp{planck} and for the
+reduced Planck units, @samp{planck-red}.  Units such as
+@samp{planckenergy} and @samp{planckenergy_red} enable you to convert
+the unreduced and reduced Planck energy unit in SI mode between the
+various systems.  In Planck units, all measurements are
+dimensionless.  
+
+The final natural unit system is the Hartree atomic units.  Like the
+Planck units, all measurements in the Hartree units are dimensionless,
+but this system is defined by defined from completely different
+physical constants: the electron mass, Planck's constant, the electron
+charge, and the Coulomb constant are the defining physical
+quantities, which are all set to unity.  To invoke this system with
+the @option{--units} option use the name @samp{hartree}.  
+
+
+@node Prompt Prefix
+@section Prompt Prefix
+@cindex prompt prefix with CGS units
+@cindex CGS units, prompt prefix
+
+If a unit system is specified with the @option{--units} option, the
+selected system's name is prepended to the @w{@samp{You have:}} prompt
+as a reminder, e.g.,
+
+@example
+@group
+(Gaussian) You have: stC
+           You want:
+        Definition: statcoulomb = sqrt(dyne) cm = 1 sqrt_cm^3 sqrt_g / s
+@end group
+@end example
+
+@noindent
+You can suppressed the prefix by including a line
+
+@example
+!prompt
+@end example
+
+@noindent
+with no argument in a site or personal units data file.  The prompt can
+be conditionally suppressed by including such a line within
+@samp{!var} ... @samp{!endvar} constructs, e.g.,
+
+@example
+@group
+!var UNITS_SYSTEM gaussian gauss
+!prompt
+!endvar
+@end group
+@end example
+
+@noindent
+This might be appropriate if you normally use Gaussian units and find
+the prefix distracting but want to be reminded when you have selected a
+different CGS system.
+
+@node Logging Calculations
+@chapter Logging Calculations
+@cindex logging calculations
+@cindex log file
+
+The @option{--log} option allows you to save the results of calculations
+in a file; this can be useful if you need a permanent record of your
+work.  For example, the fluid-flow conversion in
+@ref{Complicated Unit Expressions}, is lengthy, and if you were to use
+it in designing a piping system, you might want a record of it for the
+project file.  If the interactive session
+
+@example
+@group
+# Conversion factor A1 for pressure drop
+# dP = A1 rho f L Q^2/d^5
+You have: (8/pi^2) (lbm/ft^3)ft(ft^3/s)^2(1/in^5) # Input units
+You want: psi
+        * 43.533969
+        / 0.022970568
+@end group
+@end example
+
+@noindent
+were logged, the log file would contain
+
+@example
+@group
+### Log started Fri Oct 02 15:55:35 2015
+
+# Conversion factor A1 for pressure drop
+# dP = A1 rho f L Q^2/d^5
+From: (8/pi^2) (lbm/ft^3)ft(ft^3/s)^2(1/in^5)   # Input units
+To:   psi
+        * 43.533969
+        / 0.022970568
+@end group
+@end example
+
+@noindent
+The time is written to the log file when the file is opened.
+
+The use of comments can help clarify the meaning of calculations for
+the log.  
+The log includes conformability errors between the units at the
+@w{@samp{You have:}} and @w{@samp{You want:}} prompts, but not other
+errors, including lack of conformability of items in sums or differences
+or among items in a unit list.  For example, a conversion between zenith
+angle and elevation angle could involve
+
+@example
+@group
+You have: 90 deg - (5 deg + 22 min + 9 sec)
+                                   ^
+Illegal sum or difference of non-conformable units
+You have: 90 deg - (5 deg + 22 arcmin + 9 arcsec)
+You want: dms
+        84 deg + 37 arcmin + 51 arcsec
+You have: _
+You want: deg
+        * 84.630833
+        / 0.011816024
+You have:
+@end group
+@end example
+
+@noindent
+The log file would contain
+
+@example
+@group
+From: 90 deg - (5 deg + 22 arcmin + 9 arcsec)
+To:   deg;arcmin;arcsec
+        84 deg + 37 arcmin + 51 arcsec
+From: _
+To:   deg
+        * 84.630833
+        / 0.011816024
+@end group
+@end example
+
+@noindent
+The initial entry error (forgetting that minutes have dimension of time,
+and that arcminutes must be used for dimensions of angle) does not
+appear in the output.  When converting to a unit list alias,
+@command{units} expands the alias in the log file.
+
+The @samp{From:} and @samp{To:} tags are written to the log file even if
+the @option{--quiet} option is given.  If the log file exists when
+@command{units} is invoked, the new results are appended to the log file.
+The time is written to the log file each time the file is opened.
+The @option{--log} option is ignored when @command{units} is used
+non-interactively.
+
+@node Invoking Units
+@chapter Invoking @command{units}
+@cindex invoking units
+@cindex command-line options
+
+You invoke @command{units} like this:
+
+@example
+units [@var{options}] [@var{from-unit} [@var{to-unit}]]
+@end example
+
+@noindent
+If the @var{from-unit} and @var{to-unit} are omitted, the program
+will use interactive prompts to determine which conversions to perform.
+@xref{Interactive Use}.
+If both @var{from-unit} and @var{to-unit} are given, @command{units} will
+print the result of that single conversion and then exit.
+If only @var{from-unit} appears on the command line, @command{units} will
+display the definition of that unit and exit.
+Units specified on the command line may need
+to be quoted to protect them from shell interpretation and to group
+them into two arguments.  Note also that the @option{--quiet} option
+is enabled by default if you specify @var{from-unit} on the command line.  
+@xref{Command Line Use}.
+
+The default behavior of @command{units} can be changed by various
+options given on the command line.  In most cases, the options may be
+given in either short form (a single @samp{-} followed by a single
+character)
+or long form (@samp{--} followed by a word or hyphen-separated words).
+Short-form options are cryptic but require
+less typing; long-form options require more typing but are more
+explanatory and may be more mnemonic.  With long-form options you need
+only enter sufficient characters to uniquely identify the option to
+the program.  For example, @samp{--out@tie{}%f} works, but
+@samp{--o@tie{}%f} fails because @command{units} has other long options
+beginning with @samp{o}.  However, @samp{--q} works because
+@samp{--quiet} is the only long option beginning with @samp{q}.
+
+Some options require
+arguments to specify a value (e.g., @samp{-d@tie{}12} or
+@samp{--digits@tie{}12}).  Short-form options that do not take
+arguments may be concatenated (e.g., @samp{-erS} is equivalent to
+@samp{-e@tie{}-r@tie{}-S}); the last option in such a list may be one
+that takes an argument (e.g., @samp{-ed@tie{}12}).  With short-form
+options, the space between an option and its argument is optional (e.g.,
+@samp{-d12} is equivalent to @samp{-d@tie{}12}).  Long-form options may
+not be concatenated, and the space between a long-form option and its
+argument is required.  Short-form and long-form options may be
+intermixed on the command line.  Options may be given in any order, but
+when incompatible options (e.g., @option{--output-format} and
+@option{--exponential}) are given in combination, behavior is controlled
+by the last option given.  For example, @samp{-o%.12f@tie{}-e} gives
+exponential format with the default eight significant digits).
+
+The following options are available:
+
+@table @env
+@item -c
+@itemx --check
+@opindex -c @r{(option for} @command{units}@r{)}
+@opindex --check @r{(option for} @command{units}@r{)}
+Check that all units and prefixes defined in the units data file reduce
+to primitive units.  Print a list of all units that
+cannot be reduced.  Also display some other diagnostics about
+suspicious definitions in the units data file.  Only definitions active
+in the current locale are checked.  You should always run
+@command{units} with this option after modifying a units data file.
+
+@item --check-verbose
+@itemx --verbose-check
+@opindex --check-verbose @r{(option for} @command{units}@r{)}
+@opindex --verbose-check @r{(option for} @command{units}@r{)}
+Like the @option{--check} option, this option prints a list of units that
+cannot be reduced.  But to help find unit  definitions that cause
+endless loops,
+it lists the units as they are checked.
+If @command{units} hangs, then the last unit to be printed has a bad
+definition.  Only definitions active in the current locale are checked.
+
+@item -d @var{ndigits}
+@itemx --digits @var{ndigits}
+@opindex -d @r{(option for} @command{units}@r{)}
+@opindex --digits @r{(option for} @command{units}@r{)}
+Set the number of significant digits in the output to the value
+specified (which must be greater than zero).  For example,
+@samp{-d@tie{}12} sets the number of significant digits to 12.
+With exponential output @command{units} displays one digit to the left
+of the decimal
+@c man point
+@c noman
+point@footnote{This document refers to ``decimal point,'' but strictly,
+the @dfn{radix} separates the integer and fractional parts of a
+floating-point number; in English-speaking countries, the radix is a
+point (@samp{.}), but in most other countries it is a comma (@samp{,}).}
+@c end noman
+and eleven digits to the right of the decimal point.
+On most systems, the maximum number of internally meaningful digits is
+15; if you specify a greater number than your system's maximum, @command{units}
+will print a warning and set the number to the largest meaningful
+value.  To directly set the maximum value, give an argument
+of @code{max} (e.g., @samp{-d@tie{}max}).  Be aware, of course, that
+``significant'' here refers only to the @emph{display} of numbers; if
+results depend on physical constants not known to this precision, the
+physically meaningful precision may be less than that shown.  The
+@option{--digits} option conflicts with the @option{--output-format}
+option.
+
+@item -e
+@itemx --exponential
+@opindex -e @r{(option for} @command{units}@r{)}
+@opindex --exponential @r{(option for} @command{units}@r{)}
+Set the numeric output format to exponential (i.e., scientific
+notation), like that used in the Unix @command{units} program.
+The default precision is eight significant digits (seven digits to the
+right of the decimal point); this can be changed with the
+@option{--digits} option.  The @option{--exponential}
+option conflicts with the @option{--output-format} option.
+
+@item -o @var{format}
+@itemx --output-format @var{format}
+@opindex -o @r{(option for} @command{units}@r{)}
+@opindex --output-format @r{(option for} @command{units}@r{)}
+This option affords complete control over the numeric output format
+using the specified @var{format}. The format is a single floating
+point numeric format for the @code{printf()} function in the
+C programming language.  All compilers support the format types @samp{g}
+and @samp{G} to specify significant digits, @samp{e} and @samp{E} for
+scientific notation, and @samp{f} for fixed-point decimal.
+The ISO C99 standard introduced the @samp{F} type for fixed-point
+decimal and the @samp{a} and @samp{A} types for hexadecimal
+floating point; these types are allowed with compilers that support
+them.  The default format is @samp{%.8g}; for greater precision, you
+could specify @samp{-o@tie{}%.15g}. @xref{Numeric Output Format}, and
+the documentation for @code{printf()} for more detailed descriptions of the
+format specification.  The @option{--output-format} option affords the
+greatest control of the output appearance, but requires at least
+rudimentary knowledge of the @code{printf()} format syntax.  If you
+don't want to bother with the @code{printf()} syntax, you can specify
+greater precision more simply with the @option{--digits} option or
+select exponential format with @option{--exponential}.  The
+@option{--output-format} option is incompatible with the
+@option{--exponential} and @option{--digits} options.
+
+@item -f @var{filename}
+@itemx --file @var{filename}
+@opindex -f @r{(option for} @command{units}@r{)}
+@opindex --file @r{(option for} @command{units}@r{)}
+Instruct @command{units} to load the units file @var{filename}.  You
+can specify up to 25 units files on the command line.  When you use
+this option, @command{units} will load @emph{only} the files you list
+on the command line; it will not load the standard file or your
+personal units file unless you explicitly list them.  If @var{filename}
+is the empty string (@w{@samp{-f ""}}), the default units file (or that
+specified by @env{UNITSFILE}) will be loaded in addition to any others
+specified with @samp{-f}.
+
+@item -L @var{logfile}
+@itemx --log @var{logfile}
+@opindex -L @r{(option for} @command{units}@r{)}
+@opindex --log @r{(option for} @command{units}@r{)}
+Save the results of calculations in the file @var{logfile}; this can be
+useful if it is important to have a record of unit conversions or other
+calculations that are to be used extensively or in a critical activity
+such as a program or design project.  If @var{logfile} exits, the new
+results are appended to the file.
+This option is ignored when @command{units} is used non-interactively.
+@xref{Logging Calculations}, for a more detailed description and some
+examples.
+
+@item -H @var{filename}
+@itemx --history @var{filename}
+@opindex -f @r{(option for} @command{units}@r{)}
+@opindex --file @r{(option for} @command{units}@r{)}
+Instruct @command{units} to save history to @var{filename}, so that a
+record of your commands is available for retrieval across different
+@command{units} invocations.  To prevent the history from being saved
+set @var{filename} to the empty string (@w{@samp{-H ""}}).  This
+option has no effect if readline is not available.  
+
+@item -h
+@itemx --help
+@opindex -h @r{(option for} @command{units}@r{)}
+@opindex --help @r{(option for} @command{units}@r{)}
+Print out a summary of the options for @command{units}.
+
+@item -m
+@itemx --minus
+@opindex -m @r{(option for} @command{units}@r{)}
+@opindex --minus @r{(option for} @command{units}@r{)}
+Causes @samp{-} to be interpreted as a subtraction operator.  This is
+the default behavior.
+
+@item -p
+@itemx --product
+@opindex -p @r{(option for} @command{units}@r{)}
+@opindex --product @r{(option for} @command{units}@r{)}
+Causes @samp{-} to be interpreted as a multiplication operator when it
+has two operands.  It will act as a negation operator when it has only one
+operand: @samp{(-3)}.  By default @samp{-} is treated as a
+subtraction operator.
+
+@item --oldstar
+@opindex --oldstar @r{(option for} @command{units}@r{)}
+Causes @samp{*} to have the old-style precedence, higher than the
+precedence of division so that @samp{1/2*3} will equal @samp{1/6}.
+
+@item --newstar
+@opindex --newstar @r{(option for} @command{units}@r{)}
+Forces @samp{*} to have the new (default) precedence that follows
+the usual rules of algebra: the precedence of @samp{*} is the same as
+the precedence of @samp{/}, so that @samp{1/2*3} will equal @samp{3/2}.
+
+@item -r
+@itemx --round
+When converting to a combination of units given by a unit list, round
+the value of the last unit in the list to the nearest integer.
+
+@item -S
+@itemx --show-factor
+When converting to a combination of units specified in a list,
+always show a non-unity factor before a unit that
+begins with a fraction with a unity denominator.  By default, if the
+unit in a list begins with fraction of the form 1|@var{x} and
+its multiplier is an integer other than 1, the fraction is given as the
+product of the multiplier and the numerator (e.g., @samp{3|8@tie{}in}
+rather than @samp{3 * 1|8@tie{}in}).  In some cases, this is not what is
+wanted; for example, the results for a cooking recipe might show
+@samp{3 * 1|2@tie{}cup} as @samp{3|2@tie{}cup}.
+With the @option{--show-factor} option, a
+result equivalent to 1.5 cups will display as @samp{3 * 1|2@tie{}cup}
+rather than @samp{3|2@tie{}cup}.  A user-specified fractional unit with
+a numerator other than 1 is never overridden, however---if a unit list
+specifies @samp{3|4 cup;1|2 cup}, a result equivalent to 1@tie{}1/2 cups
+will always be shown as @samp{2 * 3|4@tie{}cup} whether or not the
+@option{--show-factor} option is given.
+
+@item --conformable
+@opindex --conformable @r{(option for} @command{units}@r{)}
+In non-interactive mode, show all units conformable with the original
+unit expression.  Only one unit expression is allowed; if you give more
+than one, @command{units} will exit with an error message and return
+failure.
+
+@item -v
+@itemx --verbose
+@opindex -v @r{(option for} @command{units}@r{)}
+@opindex --verbose @r{(option for} @command{units}@r{)}
+Give slightly more verbose output when converting units.  When combined
+with the @option{-c} option this gives the same effect as
+@option{--check-verbose}.  When combined with @option{--version}
+produces a more detailed output, equivalent to the @option{--info}
+option.  
+
+@item -V
+@itemx --version
+@opindex -V @r{(option for} @command{units}@r{)}
+@opindex --version @r{(option for} @command{units}@r{)}
+Print the program version number, tell whether the @command{readline}
+library has been included, tell whether UTF-8 support has been included;
+give the locale, the location of the default units data file, and the
+location of the personal units data file; indicate if the personal units
+data file does not exist.
+
+When given in combination with the @option{--terse} option, the program
+prints only the version number and exits.
+
+When given in combination with the @option{--verbose} option, the
+program, the @option{--version} option has the same effect as the
+@option{--info} option below.
+
+@item -I
+@itemx --info
+@opindex -I @r{(option for} @command{units}@r{)}
+@opindex --info @r{(option for} @command{units}@r{)}
+Print the information given with the @option{--version} option, show the
+pathname of the units program, show the status of the @env{UNITSFILE}
+and @env{MYUNITSFILE} environment variables, and additional information
+about how @command{units} locates the related files.  On systems running
+Microsoft Windows, the status of the @env{UNITSLOCALE} environment
+variable and information about the related locale map are also given.
+This option is usually of interest only to developers and
+administrators, but it can sometimes be useful for troubleshooting.
+
+Combining the @option{--version} and @option{--verbose} options has the
+same effect as giving @option{--info}.
+
+@item -U
+@itemx --unitsfile
+@opindex -U @r{(option for} @command{units}@r{)}
+@opindex --unitsfile @r{(option for} @command{units}@r{)}
+Print the location of the default units data file and exit; if the file
+cannot be found, print ``Units data file not found''.
+
+@item -u (gauss[ian]|esu|emu)
+@itemx --units (gauss[ian]|esu|emu)
+@opindex -u @r{(option for} @command{units}@r{)}
+@opindex --units @r{(option for} @command{units}@r{)}
+Specify a CGS units system: Gaussian, ESU, or EMU.
+
+@item -l @var{locale}
+@itemx --locale @var{locale}
+@opindex --locale @r{(option for} @command{units}@r{)}
+@opindex -l @r{(option for} @command{units}@r{)}
+Force a specified locale such as @samp{en_GB} to get British
+definitions by default.  This overrides the locale determined from
+system settings or environment variables.
+@xref{Locale}, for a description of locale format.
+
+@item -n
+@itemx --nolists
+Disable conversion to unit lists.
+
+@item -s
+@itemx --strict
+@opindex -s @r{(option for} @command{units}@r{)}
+@opindex --strict @r{(option for} @command{units}@r{)}
+Suppress conversion of units to their reciprocal units.  For
+example, @command{units} will normally convert hertz to seconds
+because these units are reciprocals of each other.  The strict option
+requires that units be strictly conformable to perform a conversion, and
+will give an error if you attempt to convert hertz to seconds.
+
+@item -1
+@itemx --one-line
+@opindex -1 @r{(option for} @command{units}@r{)}
+@opindex --one-line @r{(option for} @command{units}@r{)}
+Give only one line of output (the forward conversion); do not print
+the reverse conversion.  If a reciprocal conversion is
+performed, then @command{units} will still print the ``reciprocal
+conversion'' line.
+
+@item -t
+@itemx --terse
+@opindex -t @r{(option for} @command{units}@r{)}
+@opindex --terse @r{(option for} @command{units}@r{)}
+Print only a single conversion factor.  This option can be used when
+calling @command{units} from another program so that the output is easy to
+parse.  This option has the combined
+effect of these options:  @option{--strict} @option{--quiet} @option{--one-line}
+@option{--compact}.  When combined with @option{--version} it produces
+a display showing only the program name and version number.  
+
+@item --compact
+@opindex --compact @r{(option for} @command{units}@r{)}
+Give compact output featuring only the conversion factor; the
+multiplication and division signs are not shown, and there is no leading
+whitespace.  If you convert to a unit list, then the output is a
+semicolon separated list of factors.  
+This turns off the @option{--verbose} option.
+
+@item -q
+@itemx --quiet
+@itemx --silent
+@opindex -q @r{(option for} @command{units}@r{)}
+@opindex --quiet @r{(option for} @command{units}@r{)}
+@opindex --silent @r{(option for} @command{units}@r{)}
+Suppress the display of statistics about the number of units loaded,
+any messages printed by the units database, 
+and the prompting of the user for units.  This option does not
+affect how @command{units} displays the results.  This option is
+turned on by default if you invoke @command{units} with a unit
+expression on the command line.  
+
+@end table
+
+@node Scripting with Units
+@chapter Scripting with @command{units}
+@cindex scripting with @command{units}
+
+Despite its numerous options, @command{units} cannot cover every
+conceivable unit-conversion task.
+For example, suppose we have found some mysterious scale, but cannot
+figure out the units in which it is reporting.  We reach into our
+pocket, place a 3.75-gram coin on the scale, and observe the scale
+reading @samp{0.120}.  How do we quickly determine the units?  Or we
+might wonder if a unit has any ``synonyms,'' i.e., other units with the
+same value.
+
+The capabilities of @command{units} are easily extended with simple
+scripting.  Both questions above involve conformable units; on a system
+with Unix-like utilities, conversions to conformable units could be
+shown accomplished with the following script:
+
+@set codequoteundirected
+@set codequotebacktick
+@example
+@group
+#!/bin/sh
+
+progname=`basename $0 .sh`
+umsg="Usage: $progname [<number>] unit"
+
+if [ $# -lt 1 ]
+then
+    echo "$progname: missing quantity to convert"
+    echo "$umsg"
+    exit 1
+fi
+
+for unit in `units --conformable "$*" | cut -f 1 -d ' '`
+do
+    echo "$*"   # have -- quantity to convert
+    echo $unit  # want -- conformable unit
+done | units --terse --verbose
+@end group
+@end example
+@clear codequotebacktick
+@clear codequoteundirected
+
+@noindent
+When @command{units} is invoked with no non-option arguments, it reads
+@var{have}/@var{want} pairs, on alternating lines, from its standard
+input, so the task can be accomplished with only two invocations of
+@command{units}.  This avoids the computational overhead of needlessly
+reprocessing the units database for each conformable unit, as well as
+the inherent system overhead of process invocation.
+
+By itself, the script is not very useful.  But it could be used in
+combination with other commands to address specific tasks.  For example,
+running the script through a simple output filter could help solve the
+scale problem above.  If the script is named @command{conformable},
+running
+
+@example
+$ conformable 3.75g | grep 0.120
+@end example
+
+@noindent
+gives
+@example
+@group
+        3.75g = 0.1205653 apounce
+        3.75g = 0.1205653 fineounce
+        3.75g = 0.1205653 ozt
+        3.75g = 0.1205653 tradewukiyeh
+        3.75g = 0.1205653 troyounce
+@end group
+@end example
+
+@noindent
+So we might conclude that the scale is calibrated in troy ounces.
+
+We might run
+@example
+@group
+$ units --verbose are
+        Definition: 100 m^2 = 100 m^2
+@end group
+@end example
+
+@noindent
+and wonder if @samp{are} has any synonyms, value.  To find out, we could
+run
+
+@example
+@group
+$ conformable are | grep "= 1 "
+        are = 1 a
+        are = 1 are
+@end group
+@end example
+
+@node Output Styles
+@chapter Output Styles
+The output can be tweaked in various ways using command line options.
+With no options, the output looks like this
+
+@example
+@group
+$ units
+Currency exchange rates from FloatRates (USD base) on 2019-02-20 
+3070 units, 109 prefixes, 109 nonlinear units
+
+You have: 23ft
+You want: m
+        * 7.0104
+        / 0.14264521
+You have: m
+You want: ft;in
+        3 ft + 3.3700787 in
+@end group
+@end example
+
+@noindent
+This is arguably a bit cryptic; the @option{--verbose}
+option makes clear what the output means:
+
+@example
+@group
+$ units --verbose
+Currency exchange rates from FloatRates (USD base) on 2019-02-20 
+3070 units, 109 prefixes, 109 nonlinear units
+
+You have: 23 ft
+You want: m
+        23 ft = 7.0104 m
+        23 ft = (1 / 0.14264521) m
+You have: meter
+You want: ft;in
+        meter = 3 ft + 3.3700787 in
+@end group
+@end example
+
+@noindent
+The @option{--quiet} option suppresses the clutter displayed when
+@command{units} starts, as well as the prompts to the user.
+This option is enabled by default when you
+give units on the command line.  
+
+@example
+@group
+$ units --quiet  
+23 ft
+m
+        * 7.0104
+        / 0.14264521
+        
+$ units 23ft m 
+        * 7.0104
+        / 0.14264521
+@end group
+@end example
+
+@noindent
+The remaining style options allow you to display only numerical values
+without the tab or the multiplication and division signs, or to display just a
+single line showing the forward conversion:
+
+@set codequoteundirected
+@example
+@group
+$ units --compact 23ft m
+7.0104
+0.14264521
+
+$ units --compact m 'ft;in'
+3;3.3700787
+
+$ units --one-line 23ft m
+        * 7.0104
+
+$ units --one-line 23ft 1/m
+        reciprocal conversion
+        * 0.14264521
+        
+$ units --one-line 23ft kg
+conformability error
+        7.0104 m
+        1 kg
+@end group
+@end example
+
+@noindent
+Note that when converting to a unit list, the @option{--compact}
+option displays a semicolon separated list of results.  Also be aware
+that the
+@option{one-line} option doesn't live up to its name if you
+execute a reciprocal conversion or if you get a conformability error.
+The former case can be prevented using the @option{--strict} option,
+which suppresses reciprocal conversions.  
+Similarly you can suppress unit list conversion using
+@option{--nolists}.
+It is impossible to prevent
+the three line error output.  
+
+@example
+@group
+$ units --compact --nolists m 'ft;in' 
+Error in 'ft;in': Parse error
+
+$ units --one-line --strict 23ft 1/m
+@end group
+@end example
+
+@noindent
+The various style options can be combined appropriately.  The ultimate
+combination is the @option{--terse} option, which combines 
+@option{--strict}, @option{--quiet}, @option{--one-line},
+and @option{--compact} to produce the minimal output,
+just a single number for regular conversions and a semicolon
+separated list for conversion to unit lists.  This will likely be the
+best choice for programs that want to call @command{units} and then
+process its result.
+
+@example
+@group
+$ units --terse 23ft m
+7.0104
+
+$ units --terse m 'ft;in'
+3;3.3700787
+
+$ units --terse 23ft 1/m
+conformability error
+7.0104 m
+1 / m
+@end group
+@end example
+@clear codequoteundirected
+
+
+@node Defining Your Own Units
+@chapter Adding Your Own Definitions
+
+@menu
+* Units Data Files::           Where are units defined?
+* Defining New Units::         Writing your own unit and prefix definitions
+* Defining Nonlinear Units::   Writing your own nonlinear unit definitions
+* Piecewise Linear Units::     Writing your own piecewise linear definitions
+* Defining Unit List Aliases:: Writing your own unit list aliases
+@end menu
+
+@node Units Data Files
+@section Units Data Files
+@cindex additional units data files
+@cindex data files, additional
+@cindex units data files, additional
+@cindex @samp{!include}
+@cindex command, @samp{!include}
+@cindex including additional units data files
+
+The units and prefixes that @command{units} can convert are
+defined in the units
+data file, typically @file{/usr/share/units/definitions.units}.
+If you can't find this file, run @command{units@tie{}--version} to get
+information on the file locations for your installation.  Although you
+can extend or modify this data file if you have appropriate user
+privileges, it's usually better to put extensions in separate files so
+that the definitions will be preserved if you update @command{units}.
+
+You can include additional data files in the units database using
+the @samp{!include} command in the standard units data file. For
+example
+
+@example
+!include    /usr/local/share/units/local.units
+@end example
+
+@noindent
+might be appropriate for a site-wide supplemental data file.
+The location of the @samp{!include} statement in the standard units
+data file is important; later definitions replace earlier ones,
+so any definitions in an included file will override definitions before
+the @samp{!include} statement in the standard units data file.
+With normal invocation, no warning is given about redefinitions; to
+ensure that you don't have an unintended redefinition, run
+@command{units@tie{}-c} after making changes to any units data file.
+
+@cindex personal units data file
+@cindex units data file, personal
+
+If you want to add your own units in addition to or in place of
+standard or site-wide supplemental units data files, you can include
+them in the @file{.units} file in your home directory.  If this
+file exists it is read after the standard units data file, so that any
+definitions in this file will replace definitions of the same units in
+the standard data file or in files included from the standard data
+file.  This file will not be read if any units files are specified on
+the command line.  (Under Windows the personal units file is
+named @file{unitdef.units}.)  Running @w{@command{units -V}} will
+display the location and name of your personal units file.
+
+The @command{units} program first tries to determine your home
+directory from the @env{HOME} environment variable.  On systems running
+Microsoft Windows, if @env{HOME} does not exist, @command{units}
+attempts to find your home directory from @env{HOMEDRIVE},
+@env{HOMEPATH} and @env{USERPROFILE}.
+@cindex MYUNITSFILE environment variable
+@cindex environment variable, MYUNITSFILE
+You can specify an arbitrary file as your personal units data file with
+the @env{MYUNITSFILE} environment variable; if this variable exists, its
+value is used without searching your home directory.
+The default units data files are described in more detail in
+@ref{Data Files}.
+
+@node Defining New Units
+@section Defining New Units and Prefixes
+@cindex defining units
+@cindex units, definition of
+@cindex units definitions, adding
+@cindex units definitions, changing
+@cindex prefixes, definition of
+@cindex defining prefixes
+@cindex primitive units
+@cindex units, primitive
+@cindex @samp{!} to indicate primitive units
+@cindex command, @samp{!} to indicate primitive units
+
+A unit is specified on a single line by giving its name and an
+equivalence.  Comments start with a @samp{#} character, which can appear
+anywhere in a line.  The backslash character (@samp{\})
+acts as a continuation
+character if it appears as the last character on a line, making it
+possible to spread definitions out over several lines if desired.
+A file can be included by giving the command @samp{!include} followed by
+the file's name.  The @samp{!} must be the first character on the
+line.  The file will be sought in the same directory as the
+parent file unless you give a full path.  The name of the file to be
+included cannot contain spaces or the comment character @samp{#}.
+@cindex include files
+
+Unit names must not contain any of the operator characters @samp{+},
+@samp{-}, @samp{*}, @samp{/}, @samp{|}, @samp{^}, @samp{;}, @samp{~},
+the comment character @samp{#}, or parentheses.  They cannot begin or
+end with an underscore (@samp{_}), a comma (@samp{,}) or a decimal point
+(@samp{.}).  The figure dash (U+2012), typographical minus (`@minus{}';
+U+2212), and en dash (`--'; U+2013) are converted to the operator
+@samp{-}, so none of these characters can appear in unit names.  Names
+cannot begin with a digit, and if a name ends in a digit other than
+zero or one, the digit must be preceded by a string beginning with an
+underscore, and afterwards consisting only of digits, decimal points, or
+commas.  For example, @samp{foo_2}, @samp{foo_2,1}, or @samp{foo_3.14}
+are valid names but @samp{foo2} or @samp{foo_a2} are invalid.  The
+underscore is necessary because without it, @command{units} cannot determine
+whether @samp{foo2} is a unit name or represents @samp{foo^2}.  Zero
+and one are exceptions because @command{units} never interprets them
+as exponents.
+
+You could define nitrous oxide as
+
+@example
+N2O     nitrogen 2  + oxygen
+@end example
+
+@noindent
+but would need to define nitrogen dioxide as
+
+@example
+NO_2    nitrogen + oxygen 2
+@end example
+
+@noindent
+Be careful to define new units in terms of old ones so that a
+reduction leads to the primitive units, which are marked with @samp{!}
+characters.  Dimensionless units are indicated by using the string
+@samp{!dimensionless} for the unit definition.
+@cindex dimensionless units, defining
+
+When adding new units, be sure to use the @option{-c} option to check
+that the new units reduce properly.  If you create a loop in the units
+definitions, then @command{units} will hang when invoked with the
+@option{-c} option.  You will need to use the @option{--check-verbose}
+option, which prints out each unit as it is checked.  The program will
+still hang, but the last unit printed will be the unit that caused the
+infinite loop.
+
+@cindex parentheses
+
+If you define any units that contain
+@samp{+} characters in their definitions,
+carefully check them because the @option{-c} option
+will not catch non-conformable sums.  Be careful with the @samp{-}
+operator as well.  When used as a binary operator, the @samp{-}
+character can perform addition or multiplication
+depending on the options used to invoke @command{units}.
+To ensure consistent behavior use @samp{-} only as a unary negation
+operator when writing units definitions.  To multiply two units leave a
+space or use the @samp{*} operator with care, recalling that it has
+two possible precedence values and may require parentheses to ensure
+consistent behavior.  To compute the difference
+of @samp{foo} and @samp{bar} write @samp{foo+(-bar)} or even @samp{foo+-bar}.
+
+You may wish to intentionally redefine a unit.  When you do this, and
+use the @option{-c} option, @command{units} displays a warning message
+about the redefinition.  You can suppress these warnings by redefining
+a unit using a @samp{+} at the beginning of the unit name.  Do not
+include any white space between the @samp{+} and the redefined unit
+name.
+
+Here is an example of a short data file that defines some basic
+units:
+
+@example
+@group
+m       !               # The meter is a primitive unit
+sec     !               # The second is a primitive unit
+rad     !dimensionless  # A dimensionless primitive unit
+micro-  1e-6            # Define a prefix
+minute  60 sec          # A minute is 60 seconds
+hour    60 min          # An hour is 60 minutes
+inch    72 m            # Inch defined incorrectly terms of meters
+ft      12 inches       # The foot defined in terms of inches
+mile    5280 ft         # And the mile
++inch   0.0254 m        # Correct redefinition, warning suppressed
+@end group
+@end example
+
+@cindex parentheses
+@noindent
+A unit that ends with a @samp{-} character is a prefix.  If a prefix
+definition contains any @samp{/} characters, be sure they are protected
+by parentheses.  If you define @samp{half- 1/2}, then @samp{halfmeter}
+would be equivalent to @samp{1 / (2@tie{}meter)}.
+
+@node Defining Nonlinear Units
+@section Defining Nonlinear Units
+@cindex defining nonlinear units
+@cindex nonlinear units, defining
+@cindex nonlinear unit conversions
+Some unit conversions of interest are nonlinear; for
+example, temperature conversions between the Fahrenheit and Celsius
+scales cannot be done by simply multiplying by conversion factors.
+
+When you give a linear unit definition such as @samp{inch 2.54@tie{}cm}
+you are providing information that @command{units} uses to convert
+values in inches into primitive units of meters.  For nonlinear units,
+you give a functional definition that provides the same information.
+
+Nonlinear units are represented using a functional notation.
+It is best to regard this notation not as a function call but
+as a way of adding units to a number, much the same way that
+writing a linear unit name after a number adds units to that number.
+Internally, nonlinear units are defined by a pair of functions
+that convert to and from linear units in the database, so that
+an eventual conversion to primitive units is possible.
+
+Here is an example nonlinear unit definition:
+
+@example
+@group
+tempF(x) units=[1;K] domain=[-459.67,) range=[0,) \
+            (x+(-32)) degF + stdtemp ; (tempF+(-stdtemp))/degF + 32
+@end group
+@end example
+
+@noindent
+A nonlinear unit definition comprises a unit name, a formal parameter
+name, two functions, and optional specifications for units, the domain,
+and the range (the domain of the inverse function).  The functions tell
+@command{units} how to convert to and from the new unit.  To produce
+valid results, the arguments of these functions need to have the correct
+dimensions and be within the domains for which the functions are
+defined.
+
+@cindex parentheses
+
+The definition begins with the unit name followed immediately (with no
+spaces) by a @samp{(} character.  In the parentheses is the name of the
+formal parameter.  Next is an optional specification of the units
+required by the functions in the definition.  In the example above,
+the @samp{units=[1;K]} specification indicates that the
+@samp{tempF} function requires an input argument conformable with
+@samp{1} (i.e., the argument is dimensionless), and that the inverse
+function requires an input argument conformable with @samp{K}.  For
+normal nonlinear units definition, the forward function will always take
+a dimensionless argument; in general, the inverse function will need
+units that match the quantity measured by your nonlinear unit.
+Specifying the units enables @command{units} to perform error checking
+on function arguments, and also to assign units to domain and range
+specifications, which are described later.
+
+Next the function definitions appear.  In the example above, the
+@samp{tempF} function is defined by
+
+@example
+@group
+tempF(x) = (x+(-32)) degF + stdtemp
+@end group
+@end example
+
+@noindent
+This gives a rule for converting @samp{x} in the units @samp{tempF}
+to linear units of absolute temperature, which makes it possible to
+convert from tempF to other units.
+
+To enable conversions to Fahrenheit, you must give a rule for the
+inverse conversions.  The inverse will be @samp{x(tempF)} and its
+definition appears after a @samp{;} character.  In our example, the
+inverse is
+
+@example
+@group
+x(tempF) = (tempF+(-stdtemp))/degF + 32
+@end group
+@end example
+
+@noindent
+This inverse definition takes an absolute temperature as its argument
+and converts it to the Fahrenheit temperature.  The inverse can be
+omitted by leaving out the @samp{;} character and the inverse
+definition, but then conversions @emph{to} the unit will not be
+possible.  If the inverse definition is omitted, the @option{--check}
+option will display a warning.  It is up to you to calculate and enter
+the correct inverse function to obtain proper conversions; the
+@option{--check} option tests the inverse at one point and prints an
+error if it is not valid there, but this is not a guarantee that your
+inverse is correct.
+
+With some definitions, the units may vary.  For example, the definition
+
+@example
+@group
+square(x)       x^2
+@end group
+@end example
+
+@noindent
+can have any arbitrary units, and can also take dimensionless arguments.
+In such a case, you should @emph{not} specify units.
+If a definition takes a root of its arguments, the definition is valid
+only for units that yield such a root.  For example,
+
+@example
+@group
+squirt(x)       sqrt(x)
+@end group
+@end example
+
+@noindent
+is valid for a dimensionless argument, and for arguments with even
+powers of units.
+
+@cindex domain, nonlinear unit definitions
+@cindex range, nonlinear unit definitions
+
+Some definitions may not be valid for all real numbers.  In such cases,
+@command{units} can handle errors better if you specify an appropriate
+domain and range.  You specify the domain and range as shown below:
+
+@example
+@group
+baume(d) units=[1;g/cm^3] domain=[0,130.5] range=[1,10] \
+         (145/(145-d)) g/cm^3 ; (baume+-g/cm^3) 145 / baume
+@end group
+@end example
+
+@noindent
+In this example the domain is specified after @samp{domain=} with
+the endpoints given in brackets.  In accord with mathematical
+convention, square brackets indicate a closed interval (one that
+includes its endpoints), and parentheses indicate an open interval (one
+that does not include its endpoints).  An interval can be open or closed
+on one or both ends; an interval that is unbounded on either end is
+indicated by omitting the limit on that end.  For example, a quantity to
+which decibel (dB) is applied may have any value greater than zero, so
+the range is indicated by @samp{(0,)}:
+
+@example
+@group
+decibel(x) units=[1;1] range=(0,) 10^(x/10); 10 log(decibel)
+@end group
+@end example
+
+@noindent
+If the domain or range is given, the second endpoint must be greater
+than the first.
+
+The domain and range specifications can appear independently and in any
+order along with the units specification.
+The values for the domain and range endpoints are attached to the units
+given in the units specification, and if necessary, the parameter value
+is adjusted for comparison with the endpoints.  For example, if a
+definition includes @samp{units=[1;ft]} and @samp{range=[3,)}, the range
+will be taken as 3@tie{}ft to infinity.  If the function is passed a
+parameter of @w{@samp{900 mm}}, that value will be adjusted to
+2.9527559@tie{}ft, which is outside the specified range.
+If you omit the units specification from the previous example,
+@command{units} can not tell whether you intend the lower endpoint
+to be 3@tie{}ft or 3@tie{}microfurlongs, and can not adjust the
+parameter value of 900@tie{}mm for comparison.  Without units, 
+numerical values other than zero or plus or minus infinity for domain or
+range endpoints are meaningless, and accordingly they are not allowed.  If
+you give other values without units, then the definition will be ignored
+and you will get an error message.
+
+Although the units, domain, and range specifications are optional, it's
+best to give them when they are applicable; doing so allows
+@command{units} to perform better error checking and give more helpful
+error messages.  Giving the domain and range also enables the
+@option{--check} option to find a point in the domain to use for its
+point check of your inverse definition.
+
+You can make synonyms for nonlinear units by providing both the
+forward and inverse functions; inverse functions can be obtained using
+the @samp{~} operator.  So to create a synonym for @samp{tempF} you
+could write
+
+@example
+@group
+fahrenheit(x) units=[1;K] tempF(x); ~tempF(fahrenheit)
+@end group
+@end example
+
+@noindent
+This is useful for creating a nonlinear unit
+definition that differs slightly from an existing definition without
+having to repeat the original functions.  For example,
+
+@example
+dBW(x)     units=[1;W] range=[0,) dB(x) W ;  ~dB(dBW/W) 
+@end example
+
+@noindent
+If you wish a synonym to refer to an existing nonlinear unit without
+modification, you can do so more simply by adding the synonym with
+appended parentheses as a new unit, with the existing nonlinear
+unit---without parentheses---as the definition.  So to create a synonym
+for @samp{tempF} you could write
+
+@example
+fahrenheit()  tempF
+@end example
+
+@noindent
+The definition must be a nonlinear unit; for example, the synonym
+
+@example
+fahrenheit()  meter
+@end example
+
+@noindent
+will result in an error message when @command{units} starts.
+
+@cindex units functions
+@cindex functions of units
+You may occasionally wish to define a function that operates on units.
+This can be done using a nonlinear unit definition.  For example, the
+definition below provides conversion between radius and the area of a
+circle.  This definition requires a length as input and
+produces an area as output, as indicated by the @samp{units=} specification.
+Specifying the range as the nonnegative numbers can prevent cryptic
+error messages.
+
+@example
+@group
+circlearea(r) units=[m;m^2] range=[0,)   pi r^2 ; sqrt(circlearea/pi)
+@end group
+@end example
+
+@node Piecewise Linear Units
+@section Defining Piecewise Linear Units
+@cindex defining piecewise linear units
+@cindex linear interpolation
+@cindex units, piecewise linear
+@cindex piecewise linear units
+Sometimes you may be interested in a piecewise linear unit such as
+many wire gauges.  Piecewise linear units can be defined by specifying
+conversions to linear units on a list of points.
+Conversion at other points will be done by linear interpolation.
+A partial definition of zinc gauge is
+
+@example
+@group
+zincgauge[in] 1 0.002, 10 0.02, 15 0.04, 19 0.06, 23 0.1
+@end group
+@end example
+
+@noindent
+In this example, @samp{zincgauge} is the name of the piecewise linear
+unit.  The definition of such a unit is indicated by the
+embedded @samp{[} character.  After the bracket, you should indicate the
+units to be attached to the numbers in the table.
+No spaces can appear before the
+@samp{]} character, so a definition like @samp{foo[kg meters]} is
+invalid; instead write @samp{foo[kg*meters]}.  The definition of the
+unit consists of a list of pairs optionally separated by commas.
+This list defines a function for converting from the piecewise linear
+unit to linear units.  The
+first item in each pair is the function argument; the second item is the
+value of the function at that argument (in the units specified in brackets).
+In this example,
+we define @samp{zincgauge} at five points.  For example, we set
+@samp{zincgauge(1)} equal to @w{@samp{0.002 in}}.  Definitions like this
+may be  more readable  if written using  continuation characters as
+
+@example
+@group
+zincgauge[in] \
+     1 0.002  \
+    10 0.02   \
+    15 0.04   \
+    19 0.06   \
+    23 0.1
+@end group
+@end example
+
+@noindent
+With the preceding definition, the following conversion can be
+performed:
+
+@example
+@group
+You have: zincgauge(10)
+You want: in
+    * 0.02
+    / 50
+You have: .01 inch
+You want: zincgauge
+    5
+@end group
+@end example
+
+@noindent
+If you define a piecewise linear unit that is not strictly monotonic,
+then the inverse will not be well defined.  If the inverse is requested
+for such a unit, @command{units} will return the smallest inverse.
+
+After adding nonlinear units definitions, you should normally run
+@w{@command{units --check}} to check for errors.  If the @samp{units}
+keyword is not given, the @option{--check} option checks a nonlinear unit
+definition using a dimensionless argument, and then checks using an
+arbitrary combination of units, as well as the square and cube of that
+combination; a warning is given if any of these tests fail.  For
+example,
+
+@set codequoteundirected
+@example
+@group
+Warning: function 'squirt(x)' defined as 'sqrt(x)'
+         failed for some test inputs:
+         squirt(7(kg K)^1): Unit not a root
+         squirt(7(kg K)^3): Unit not a root
+@end group
+@end example
+@clear codequoteundirected
+
+@noindent
+Running @w{@command{units --check}} will print a warning if a
+non-monotonic piecewise linear unit is encountered.  For example, the
+relationship between ANSI coated abrasive designation and mean particle
+size is non-monotonic in the vicinity of 800 grit:
+
+@example
+@group
+ansicoated[micron] \
+     . . .
+    600 10.55 \
+    800 11.5 \
+    1000 9.5 \
+@end group
+@end example
+
+@noindent
+Running @w{@command{units --check}} would give the error message
+
+@set codequoteundirected
+@example
+@group
+Table 'ansicoated' lacks unique inverse around entry 800
+@end group
+@end example
+@clear codequoteundirected
+
+@noindent
+Although the inverse is not well defined in this region, it's not really
+an error.  Viewing such error messages can be tedious, and if there are
+enough of them, they can distract from true errors.  Error checking for
+nonlinear unit definitions can be suppressed by giving the
+@samp{noerror} keyword; for the examples above, this could be done as
+
+@example
+@group
+squirt(x) noerror domain=[0,) range=[0,) sqrt(x); squirt^2
+ansicoated[micron] noerror \
+     . . .
+@end group
+@end example
+
+@noindent
+Use the @samp{noerror} keyword with caution.  The safest approach after
+adding a nonlinear unit definition is to run @w{@command{units --check}}
+and confirm that there are no actual errors before adding the
+@samp{noerror} keyword.
+
+@node Defining Unit List Aliases
+@section Defining Unit List Aliases
+@cindex defining unit list aliases
+@cindex unit list aliases, defining
+@cindex @samp{!unitlist}
+@cindex command, @samp{!unitlist}
+
+Unit list aliases are treated differently from unit definitions,
+because they are a data entry shorthand rather than a true definition
+for a new unit.
+A unit list alias definition begins with @samp{!unitlist} and includes the
+alias and the definition;  for example, the aliases included in the
+standard units data file are
+
+@example
+@group
+!unitlist   hms     hr;min;sec
+!unitlist   time    year;day;hr;min;sec
+!unitlist   dms     deg;arcmin;arcsec
+!unitlist   ftin    ft;in;1|8 in
+!unitlist   usvol   cup;3|4 cup;2|3 cup;1|2 cup;1|3 cup;1|4 cup;\
+                    tbsp;tsp;1|2 tsp;1|4 tsp;1|8 tsp
+@end group
+@end example
+
+@noindent
+Unit list aliases are only for unit lists, so the definition must
+include a @samp{;}.  Unit list aliases can never be combined with
+units or other unit list aliases, so the definition of @samp{time}
+shown above could @emph{not} have been shortened to
+@samp{year;day;hms}.
+
+As usual, be sure to run @w{@command{units --check}} to ensure that the
+units listed in unit list aliases are conformable.
+
+@node Numeric Output Format
+@chapter Numeric Output Format
+@cindex numeric output format
+@cindex output format
+
+@menu
+* Format Specification::           The output format specification
+* Flags::                          Optional format flags
+* Field Width::                    Specifying output field width
+* Precision::                      Specifying output precision
+@end menu
+
+By default, @code{units} shows results to eight significant
+digits. You can change this with the @option{--exponential},
+@option{--digits}, and @option{--output-format} options.  The first
+sets an exponential format (i.e., scientific notation) like that used
+in the original Unix @command{units} program, the second allows you to
+specify a different number of significant digits, and the last allows
+you to control the output appearance using the format for the
+@code{printf()} function in the C programming language.  If you only
+want to change the number of significant digits or specify exponential
+format type, use the @option{--digits} and @option{--exponential}
+options.  The @option{--output-format} option affords the greatest
+control of the output appearance, but requires at least rudimentary
+knowledge of the @code{printf()} format syntax. @xref{Invoking Units},
+for descriptions of these options.
+
+@node Format Specification
+@section Format Specification
+@cindex output format specification
+@cindex format specification, output
+
+The format specification recognized with the @option{--output-format}
+option is a subset of that for @code{printf()}.  The format specification has
+the form
+@c noman
+@code{%}[@i{flags}][@i{width}][@code{.}@i{precision}]@i{type};
+@c end noman
+@c ifman
+@ignore
+.\".CW "%\fR[\fP\fIflags\fP\fR][\fP\fIwidth\fP\fR][\fP.\fIprecision\fP\fR]\fP\fItype\fP" ;
+@code{%}[@i{flags}][@i{width}][\c
+@code{.}@i{precision}]@i{type};
+@end ignore
+@c end ifman
+it must begin with @samp{%}, and must end with a floating-point type
+specifier:
+@samp{g} or @samp{G} to specify the number of significant digits,
+@samp{e} or @samp{E} for scientific notation, and @samp{f} for
+fixed-point decimal.  The ISO C99 standard added the @samp{F} type for
+fixed-point decimal and the @samp{a} and @samp{A} types for hexadecimal
+floating point; these types are allowed with compilers that support
+them.  Type length modifiers (e.g., @samp{L} to indicate a long double)
+are inapplicable and are not allowed.
+
+The default format for @command{units} is @samp{%.8g};
+for greater precision, you could specify @samp{-o@tie{}%.15g}.
+The @samp{g} and @samp{G} format types use exponential format whenever
+the exponent would be less than @minus{}4, so the value 0.000013
+displays as @samp{1.3e-005}.  These types also use exponential notation
+when the exponent is greater than or equal to the precision, so with the
+default format, the value
+@c
+@tex
+$5\times 10^7$
+@end tex
+@ifnottex
+@c noman
+5e7
+@c end noman
+@c man .if t .ig ++
+@c man 5e7
+@c man .++
+@c man .if n .ig ++
+@c man .EQ
+@c man 5 times 10 sup 7
+@c man .EN
+@c man .++
+@end ifnottex
+displays as @samp{50000000} and the value
+@tex
+$5\times 10^8$
+@end tex
+@ifnottex
+@c noman
+5e8
+@c end noman
+@c man .if t .ig ++
+@c man 5e8
+@c man .++
+@c man .if n .ig ++
+@c man .EQ
+@c man 5 times 10 sup 8
+@c man .EN
+@c man .++
+@end ifnottex
+displays as @samp{5e+008}.  If you prefer fixed-point display, you might
+specify @samp{-o@tie{}%.8f}; however, small numbers will display very
+few significant digits, and values less than
+@tex
+$0.5\times10^{-8}$
+@end tex
+@ifnottex
+@c noman
+0.5e@minus{}8
+@c end noman
+@c man .if t .ig ++
+@c man 0.5e\-8
+@c man .++
+@c man .if n .ig ++
+@c man .EQ
+@c man 0.5 times 10 sup -8
+@c man .EN
+@c man .++
+@end ifnottex
+will show nothing but zeros.
+
+The format specification may include one or more optional flags:
+@samp{+}, @samp{@tie{}} (space), @samp{#}, @samp{-}, or @samp{0} (the
+digit zero).  The digit-grouping flag
+@c noman
+@set codequoteundirected
+@samp{'} (apostrophe)
+@clear codequoteundirected
+@c end noman
+@c if the troff formatter is groff, ensure an ASCII single quote
+@c man .ie \n(.g \(oq\(aq'
+@c man .el \&'
+is allowed with compilers that support it.  Flags are followed by an
+optional value for the minimum field width, and an optional precision
+specification that begins with a period (e.g., @samp{.6}).  The field
+width includes the digits, decimal point, the exponent, thousands
+separators (with the digit-grouping flag), and the sign if any of these
+are shown.
+
+@node Flags
+@section Flags
+@cindex output format flags
+@cindex flags, output format
+
+The @samp{+} flag causes the output to have a sign (@samp{+} or @samp{-}).
+The space flag @samp{@tie{}} is similar to the @samp{+} flag, except
+that when the value is positive, it is prefixed with a space rather than
+a plus sign; this flag is ignored if the @samp{+} flag is also given.
+The @samp{+} or @samp{@tie{}} flag could be useful if conversions might
+include positive and negative results, and you wanted to align
+the decimal points in exponential notation.
+@c
+The @samp{#} flag causes the output value to contain a decimal point in
+all cases; by default, the output contains a decimal point only if there
+are digits (which can be trailing zeros) to the right of the point.
+With the @samp{g} or @samp{G} types, the @samp{#} flag also prevents the
+suppression of trailing zeros.
+@c
+The digit-grouping flag
+@c noman
+@set codequoteundirected
+@samp{'}
+@clear codequoteundirected
+@c end noman
+@c if the troff formatter is groff, ensure an ASCII single quote
+@c man .ie \n(.g \(oq\(aq'
+@c man .el \&`''
+shows a thousands separator in digits to the left of the decimal point.
+@c (e.g., @samp{1,234.56}).
+This can be useful when displaying large numbers in fixed-point decimal;
+for example, with the format @samp{%f},
+
+@example
+You have: mile
+You want: microfurlong
+        * 8000000.000000
+        / 0.000000
+@end example
+
+@noindent
+the magnitude of the first result may not be immediately obvious without
+counting the digits to the left of the decimal point.  If the thousands
+separator is the comma (@samp{,}), the output with the format
+@c noman
+@set codequoteundirected
+@samp{%'f}
+@clear codequoteundirected
+@c end noman
+@c if the troff formatter is groff, ensure an ASCII single quote
+@c man .ie \n(.g \(oq%\(aqf'
+@c man .el `%'f'
+might be
+
+@example
+You have: mile
+You want: microfurlong
+        * 8,000,000.000000
+        / 0.000000
+@end example
+
+@noindent
+making the magnitude readily apparent.  Unfortunately, few compilers
+support the digit-grouping flag.
+
+@c
+With the @samp{-} flag, the output value is left aligned within the
+specified field width.  If a field width greater than needed to show the
+output value is specified, the @samp{0} (zero) flag causes the output
+value to be left padded with zeros until the specified field width is
+reached; for example, with the format @samp{%011.6f},
+
+@example
+You have: troypound
+You want: grain
+        * 5760.000000
+        / 0000.000174
+@end example
+
+@noindent
+The @samp{0} flag has no effect if the @samp{-} (left align) flag is
+given.
+
+@node Field Width
+@section Field Width
+@cindex output field width
+
+By default, the output value is left aligned and shown with the minimum
+width necessary for the specified (or default) precision.  If a field
+width greater than this is specified, the value shown is right aligned,
+and padded on the left with enough spaces to provide the specified field
+width.  A width specification is typically used with fixed-point decimal
+to have columns of numbers align at the decimal point; this arguably is
+less useful with @command{units} than with long columnar output, but it
+may nonetheless assist in quickly assessing the relative magnitudes of
+results.  For example, with the format @samp{%12.6f},
+
+@example
+@group
+You have: km
+You want: in
+        * 39370.078740
+        /     0.000025
+@end group
+@group
+You have: km
+You want: rod
+        *   198.838782
+        /     0.005029
+@end group
+@group
+You have: km
+You want: furlong
+        *     4.970970
+        /     0.201168
+@end group
+@end example
+
+@node Precision
+@section Precision
+@cindex output precision
+@cindex precision, output
+
+The meaning of ``precision'' depends on the format type.  With @samp{g}
+or @samp{G}, it specifies the number of significant digits (like the
+@option{--digits} option); with @samp{e}, @samp{E}, @samp{f}, or
+@samp{F}, it specifies the maximum number of digits to be shown after
+the decimal point.
+
+@c
+With the @samp{g} and @samp{G} format types, trailing zeros are
+suppressed, so the results may sometimes have fewer digits than the
+specified precision (as indicated above, the @samp{#} flag causes
+trailing zeros to be displayed).
+
+The default precision is 6, so @samp{%g} is equivalent to @samp{%.6g},
+and would show the output to six significant digits.  Similarly,
+@samp{%e} or @samp{%f} would show the output with six digits after the
+decimal point.
+
+The C @code{printf()} function allows a precision of arbitrary size, whether or
+not all of the digits are meaningful.  With most compilers, the maximum
+internal precision with @command{units} is 15 decimal digits (or 13
+hexadecimal digits).
+With the @option{--digits} option, you are limited
+to the maximum internal precision; with the @option{--output-format}
+option, you may specify a precision greater than this, but it may not be
+meaningful.  In some cases, specifying excess precision can result in
+rounding artifacts.  For example, a pound is exactly 7000 grains, but
+with the format @samp{%.18g}, the output might be
+
+@example
+You have: pound
+You want: grain
+        * 6999.9999999999991
+        / 0.00014285714285714287
+@end example
+
+@noindent
+With the format @samp{%.25g} you might get the following:
+
+@example
+You have: 1/3
+You want:
+        Definition: 0.333333333333333314829616256247
+@end example
+
+@noindent
+In this case the displayed value includes a series of digits that represent the
+underlying binary floating-point approximation to 1/3 but are not
+meaningful for the desired computation.
+In general, the result with excess precision is system dependent.
+@c
+The precision affects only the @emph{display} of numbers; if a result
+relies on physical constants that are not known to the specified
+precision, the number of physically meaningful digits may be less than
+the number of digits shown.
+
+See the documentation for @code{printf()} for more detailed descriptions of the
+format specification.
+
+The @option{--output-format} option is incompatible with the
+@option{--exponential} or @option{--digits} options; if the former is
+given in combination with either of the latter, the format is controlled
+by the last option given.
+
+@node Localization
+@chapter Localization
+@cindex environment dependent definitions
+@cindex localization
+@cindex @samp{!locale}
+@cindex command, @samp{!locale}
+@cindex @samp{!endlocale}
+@cindex command, @samp{!endlocale}
+@cindex command, @samp{!endvar}
+@cindex command, @samp{!var}
+@cindex command, @samp{!varnot}
+@cindex command, @samp{!set}
+@cindex command, @samp{!message}
+
+@menu
+* Locale::                   What is a locale?
+* Additional Localization::  When the locale isn't enough
+@end menu
+
+Some units have different values in different locations.  The
+localization feature accommodates this by allowing a units data file to
+specify definitions that depend on the user's locale.
+
+@node Locale
+@section Locale
+@cindex locale
+A locale is a subset of a user's environment that indicates the user's
+language and country, and some attendant preferences, such as the
+formatting of dates.  The @command{units} program attempts to determine
+the locale from the POSIX setlocale function; if this cannot be done,
+@command{units} examines the environment
+variables @env{LC_CTYPE} and @env{LANG}.
+On POSIX systems, a locale is of the form
+@var{language}@code{_}@var{country}, where @var{language} is the
+two-character code from ISO 639-1 and @var{country} is the two-character
+code from ISO 3166-1; @var{language} is lower case and @var{country} is
+upper case. For example, the POSIX locale for the United Kingdom is @code{en_GB}.
+
+@cindex @file{locale_map.txt}
+@cindex setlocale function
+On systems running Microsoft Windows, the value returned by setlocale()
+is different from that on POSIX systems; @command{units} attempts to map
+the Windows value to a POSIX value by means of a table in the file
+@file{locale_map.txt} in the same directory as the other data files.  The
+file includes entries for many combinations of language and country, and
+can be extended to include other combinations.  The @file{locale_map.txt}
+file comprises two tab-separated columns; each entry is of the form
+
+@display
+@var{Windows-locale}@ @ @ @var{POSIX-locale}
+@end display
+
+@noindent
+where @var{POSIX-locale} is as described above, and @var{Windows-locale}
+typically spells out both the language and country.  For example, the
+entry for the United States is
+
+@example
+English_United States   en_US
+@end example
+
+@noindent
+You can force @command{units} to run in a desired locale by using the
+@option{-l} option.
+
+In order to create unit definitions for a particular locale you begin
+a block of definitions in a unit datafile with @samp{!locale} followed
+by a locale name.  The @samp{!} must be the first character on the
+line.  The @command{units} program reads the following
+definitions only if the current locale matches.  You end the block of
+localized units with @samp{!endlocale}.  Here is an example, which
+defines the British gallon.
+
+@example
+@group
+!locale en_GB
+gallon       4.54609 liter
+!endlocale
+@end group
+@end example
+
+@node Additional Localization
+@section Additional Localization
+
+Sometimes the locale isn't sufficient to determine unit preferences.
+There could be regional preferences, or a company could have specific
+preferences.  Though probably uncommon, such differences could arise
+with the choice of English customary units outside of English-speaking
+countries.  To address this, @command{units} allows specifying
+definitions that depend on environment variable settings.
+The environment variables can be controled based on the current locale,
+or the user can set them to force a particular group of definitions.
+
+A conditional block of definitions in a units data file begins with
+either @samp{!var} or @samp{!varnot} following by an environment
+variable name and then a space separated
+list of values.  The leading @samp{!} must appear in the first column of a units
+data file, and the conditional block is terminated by @samp{!endvar}.
+Definitions in blocks beginning with @samp{!var} are executed only if the
+environment variable is exactly equal to one of the listed values.
+Definitions in blocks beginning with @samp{!varnot} are executed only if the
+environment variable does @emph{not} equal any of the list values.
+
+The inch has long been a customary measure of length in many places.
+The word comes from the Latin @emph{uncia} meaning ``one twelfth,''
+referring to its relationship with the foot.  By the 20th century, the
+inch was officially defined in English-speaking countries relative to
+the yard, but until 1959, the yard differed slightly among those
+countries.  In France the customary inch, which was displaced in 1799
+by the meter, had a different length based on a french foot.  These
+customary definitions could be accommodated as follows:
+
+@example
+@group
+!var INCH_UNIT usa
+yard          3600|3937 m
+!endvar
+@end group
+@group
+!var INCH_UNIT canada
+yard          0.9144 meter
+!endvar
+@end group
+@group
+!var INCH_UNIT uk
+yard          0.91439841 meter
+!endvar
+@end group
+@group
+!var INCH_UNIT canada uk usa
+foot          1|3 yard
+inch          1|12 foot
+!endvar
+@end group
+@group
+!var INCH_UNIT france
+foot          144|443.296 m
+inch          1|12 foot
+line          1|12 inch
+!endvar
+@end group
+@group
+!varnot INCH_UNIT usa uk france canada
+!message Unknown value for INCH_UNIT
+!endvar
+@end group
+@end example
+
+@noindent
+When @command{units} reads the above definitions it will check the
+environment variable @env{INCH_UNIT} and load only the definitions for
+the appropriate section.  If @env{INCH_UNIT} is unset or is not set to
+one of the four values listed, then @command{units} will run the last
+block.  In this case that block uses the
+@samp{!message} command to display a warning message.  Alternatively
+that block could set default values.
+
+In order to create default values that are overridden by user settings
+the data file can use the @samp{!set} command, which sets an
+environment variable @emph{only if it is not already set};  these
+settings are only for the current @command{units} invocation and do
+not persist.  So if the example above were preceded by
+@samp{!set INCH_UNIT france}, then this would make @samp{france} the
+default value for @env{INCH_UNIT}.  If the user had set the variable
+in the environment before invoking @command{units}, then
+@command{units} would use the user's value.
+
+To link these settings to the user's locale you combine the @samp{!set}
+command with the @samp{!locale} command.
+If you wanted to combine the above example with suitable locales you
+could do by @emph{preceding} the above definition with the following:
+
+@example
+@group
+!locale en_US
+!set INCH_UNIT usa
+!endlocale
+!locale en_GB
+!set INCH_UNIT uk
+!endlocale
+!locale en_CA
+!set INCH_UNIT canada
+!endlocale
+!locale fr_FR
+!set INCH_UNIT france
+!endlocale
+!set INCH_UNIT france
+@end group
+@end example
+
+@noindent
+These definitions set the overall default for @env{INCH_UNIT} to
+@samp{france} and set default values for four locales appropriately.
+The overall default setting comes last so that it only applies when
+@env{INCH_UNIT} was not set by one of the other commands or by the
+user.
+
+If the variable given after @samp{!var} or @samp{!varnot} is undefined,
+then @command{units} prints an error message and ignores the
+definitions that follow.  Use @samp{!set} to create defaults to
+prevent this situation from arising.  The @option{-c}
+option only checks the definitions that are active for the current
+environment and locale, so when adding new definitions take care to
+check that all cases give rise to a well defined set of definitions.
+
+@node Environment Vars
+@chapter Environment Variables
+@cindex environment variables
+
+The @command{units} program uses the following environment variables:
+
+@table @env
+@item HOME
+@cindex HOME environment variable
+@cindex environment variable, HOME
+Specifies the location of your home directory; it is used by
+@command{units} to find a personal units data file @samp{.units}.  On
+systems running Microsoft Windows, the file is @samp{unitdef.units}, and
+if @env{HOME} does not exist, @command{units} tries to determine your
+home directory from the @env{HOMEDRIVE} and @env{HOMEPATH} environment
+variables; if these variables do not exist, units finally tries
+@env{USERPROFILE}---typically @file{C:\Users\@var{username}} (Windows
+Vista and Windows@tie{}7) or
+@w{@file{C:\Documents and Settings\@var{username}}} (Windows@tie{}XP).
+
+@item LC_CTYPE, LANG
+@cindex LANG environment variable
+@cindex LC_CTYPE environment variable
+@cindex environment variable, LANG
+@cindex environment variable, LC_CTYPE
+Checked to determine the locale if @command{units} cannot obtain it
+from the operating system.  Sections of the
+standard units data file are specific to certain locales.
+
+@item MYUNITSFILE
+@cindex MYUNITSFILE environment variable
+@cindex environment variable, MYUNITSFILE
+Specifies your personal units data file.  If this variable exists,
+@command{units} uses its value rather than searching your home
+directory for @samp{.units}.  The personal units file will not be
+loaded if any data files are given using the @option{-f} option.
+
+@item PAGER
+@cindex PAGER environment variable
+@cindex environment variable, PAGER
+@cindex help
+Specifies the pager to use for help and for displaying the conformable
+units.  The help function browses the units database and calls
+the pager using the @samp{+n}@var{n} syntax for specifying a line
+number.  The default pager is @command{more}; @env{PAGER} can be used
+to specify alternatives such as @command{less}, @command{pg},
+@command{emacs}, or @command{vi}.
+
+@item UNITS_ENGLISH
+@cindex UNITS_ENGLISH environment variable
+@cindex environment variable, UNITS_ENGLISH
+Set to either @samp{US} or
+@samp{GB} to choose United States or British volume definitions,
+overriding the default from your locale.
+
+@item UNITSFILE
+@cindex UNITSFILE environment variable
+@cindex environment variable, UNITSFILE
+Specifies the units data file to use (instead of the default).
+You can only specify a single units data file using this environment
+variable.  If units data files are given using the @option{-f} option,
+the file specified by @env{UNITSFILE} will be not be loaded unless the
+@option{-f} option is given with the empty string
+(@w{@samp{units -f ""}}).
+
+@item UNITSLOCALEMAP
+@cindex UNITSLOCALEMAP environment variable
+@cindex environment variable, UNITSLOCALEMAP
+Windows only; this variable has no effect on Unix-like systems.
+Specifies the units locale map file to use (instead of the default).
+This variable seldom needs to be set, but you can use it to ensure that
+the locale map file will be found if you specify a location for the
+units data file using either the @option{-f} option or the
+@env{UNITSFILE} environment variable, and that location does not also
+contain the locale map file.
+
+@item UNITS_SYSTEM
+@cindex UNITS_SYSTEM environment variable
+@cindex environment variable, UNITS_SYSTEM
+This environment variable is used in the standard data file to select
+CGS measurement systems.  Currently supported systems are @samp{esu},
+@samp{emu}, @samp{gauss[ian]}, and @samp{si}.  The default is @samp{si}.
+
+@end table
+
+@node Data Files
+@chapter Data Files
+@cindex files, data
+@cindex data files
+
+The @command{units} program uses two default data files:
+@file{definitions.units} and @file{currency.units}.  The program can
+also use an optional personal units data file @file{.units}
+(@file{unitdef.units} under Windows) located in the user's home
+directory.  The personal units data file is described in more detail in
+@ref{Units Data Files}.
+
+On Unix-like systems, the data files are typically located in
+@file{/usr/share/units} if @command{units} is provided with the
+operating system, or in @file{/usr/local/share/units} if @command{units}
+is compiled from the source distribution.  Note that the currency file
+@file{currency.units} is a symbolic link to another location.  
+
+On systems running Microsoft Windows, the files may be in the same
+locations if Unix-like commands are available, a Unix-like file
+structure is present (e.g., @file{C:/usr/local}), and @command{units} is
+compiled from the source distribution.  If Unix-like commands are not
+available, a more common location is
+@w{@file{C:\Program Files (x86)\GNU\units}} (for 64-bit Windows
+installations) or @w{@file{C:\Program Files\GNU\units}} (for 32-bit
+installations).
+
+If @command{units} is obtained from the GNU Win32 Project
+(@uref{http://gnuwin32.sourceforge.net/}), the files are commonly in
+@w{@file{C:\Program Files\GnuWin32\share\units}}.
+
+If the default units data file is not an absolute pathname,
+@command{units} will look for the file in the directory that contains
+the @command{units} program; if the file is not found there,
+@command{units} will look in a directory @code{../share/units} relative
+to the directory with the @command{units} program.
+
+You can determine the location of the files by running
+@w{@command{units --version}}.  Running @w{@command{units --info}}
+will give you additional information about the files, how
+@command{units} will attempt to find them, and the status of the
+related environment variables.
+
+
+@node Unicode Support
+@chapter Unicode Support
+@cindex Unicode support
+@cindex UTF-8
+@cindex @samp{!utf8}
+@cindex command, @samp{!utf8}
+@cindex @samp{!endutf8}
+@cindex command, @samp{!endutf8}
+
+The standard units data file is in Unicode, using UTF-8 encoding.  Most
+definitions use only ASCII characters (i.e., code points U+0000 through
+U+007F); definitions using non-ASCII characters appear in blocks
+beginning with @samp{!utf8} and ending with @samp{!endutf8}.
+
+The non-ASCII definitions are loaded only if the platform and the locale
+support @w{UTF-8}.  Platform support is determined when @command{units}
+is compiled; the locale is checked at every invocation of
+@command{units}.  To see if your version of @command{units} includes
+Unicode support, invoke the program with the @option{--version} option.
+
+When Unicode support is available, @command{units} checks every line
+within UTF-8 blocks in all of the units data files for invalid or
+non-printing UTF-8 sequences; if such sequences occur, @command{units}
+ignores the entire line.  In addition to checking validity,
+@command{units} determines the display width of non-ASCII characters to
+ensure proper positioning of the pointer in some error messages and to
+align columns for the @samp{search} and @samp{?} commands.
+
+As of early 2019, Microsoft Windows provides limited support for UTF-8
+in console applications, and accordingly, @command{units} does not
+support Unicode on Windows.  The UTF-16 and UTF-32 encodings are not
+supported on any platforms.
+
+If Unicode support is available and definitions that contain non-ASCII
+UTF-8 characters are added to a units data file, those definitions
+should be enclosed within @samp{!utf8} @dots{} @samp{!endutf8} to ensure
+that they are only loaded when Unicode support is available.  As usual,
+the @samp{!} must appear as the first character on the line.  As
+discussed in @ref{Units Data Files}, it's usually best to put such
+definitions in supplemental data files linked by an @samp{!include}
+command or in a personal units data file.
+
+When Unicode support is not available, @command{units} makes no assumptions
+about character encoding, except that characters in the range 00--7F
+hexadecimal correspond to ASCII encoding.  Non-ASCII characters are
+simply sequences of bytes, and have no special meanings; for definitions
+in supplementary units data files, you can use any encoding consistent
+with this assumption.  For example, if you wish to use non-ASCII
+characters in definitions when running @command{units} under Windows,
+you can use a character set such as Windows ``ANSI'' (code page 1252 in
+the US and Western Europe); if this is done, the console code page must
+be set to the same encoding for the characters to display properly.
+You can even use UTF-8, though some messages may be improperly aligned,
+and @command{units} will not detect invalid UTF-8 sequences.  If you use
+UTF-8 encoding when Unicode support is not available, you should place any
+definitions with non-ASCII characters @emph{outside} @samp{!utf8}
+@dots{} @samp{!endutf8} blocks---otherwise, they will be ignored.
+
+Typeset material other than code examples usually uses the Unicode minus
+(U+2212) rather than the ASCII hyphen-minus operator (U+002D) used in
+@command{units}; the figure dash (U+2012) and en dash (U+2013) are also
+occasionally used.  To allow such material to be copied and pasted for
+interactive use or in units data files, @command{units} converts these
+characters to U+002D before further processing.  Because of this, none
+of these characters can appear in unit names.
+
+@node Readline Support
+@chapter Readline Support
+@cindex @command{readline}, use with @command{units}
+
+If the @command{readline} package has been compiled in, then when
+@command{units} is used interactively, numerous command line editing
+features are available.  To check if your version of @command{units}
+includes @command{readline}, invoke the program with the
+@option{--version} option.
+
+For complete information about @command{readline}, consult the
+documentation for the @command{readline} package.  Without any
+configuration, @command{units} will allow editing in the style of
+emacs.  Of particular use with @command{units} are the completion
+commands.
+
+@cindex @samp{?} for unit completion with @command{readline}
+@cindex unit completion using @samp{?} (@command{readline} only)
+@cindex completion, unit, using @samp{?} (@command{readline} only)
+If you type a few characters and then hit @key{ESC} followed by
+@kbd{?}, then @command{units} will display a list of all the units that
+start with the characters typed.  For example, if you type @kbd{metr} and
+then request completion, you will see something like this:
+@cindex unit name completion
+
+@example
+@group
+You have: metr
+metre             metriccup         metrichorsepower  metrictenth
+metretes          metricfifth       metricounce       metricton
+metriccarat       metricgrain       metricquart       metricyarncount
+You have: metr
+@end group
+@end example
+
+@noindent
+If there is a unique way to complete a unit name, you can hit the @key{TAB} key
+and @command{units} will provide the rest of the unit name.  If @command{units}
+beeps, it means that there is no unique completion.  Pressing the @key{TAB}
+key a second time will print the list of all completions.
+
+The readline library also keeps a history of the values you enter.
+You can move through this history using the up and down arrows.  The
+history is saved to the file @file{.units_history} in your home
+directory so that it will persist across multiple @command{units}
+invocations.  If you wish to keep work for a certain project separate
+you can change the history filename using the @option{--history}
+option.  You could, for example, make an alias for @command{units} to
+@command{units --history .units_history} so that @command{units} would
+save separate history in the current directory.  
+The length of each history file is limited to 5000 lines.  Note also that if
+you run several concurrent copies of @command{units} each one will save
+its new history to the history file upon exit.
+
+@node Currency
+@chapter Updating Currency Exchange Rates
+@cindex currency, updating
+@cindex exchange rates, updating
+
+@c man .na
+The units program database includes currency exchange rates and prices
+for some precious metals.  Of course, these values change over time,
+sometimes very rapidly, and @command{units} cannot provide real-time
+values.  To update the exchange rates, run @command{units_cur}, which
+rewrites the file containing the currency rates, typically
+@file{/var/lib/@/units/@/currency.units} or
+@file{/usr/local/@/com/@/units/@/currency.units}
+on a Unix-like system or
+@file{@w{C:\Program Files (x86)}\@/GNU\@/units\@/definitions.units} on a Windows
+system.
+@c man .ad b
+
+This program requires Python (@uref{https://www.python.org}); either
+version 2 or 3 will work.  The program must be run with suitable
+permissions to write the file.  To keep the rates updated automatically,
+run it using a cron job on a Unix-like system, or a similar scheduling
+program on a different system.
+
+Reliable free sources of currency exchange rates have been annoyingly
+ephemeral.  The program currently supports several sources:
+
+@itemize @bullet
+
+@item
+FloatRates (@uref{https://www/floatrates.com}).
+The US dollar (@samp{USD}) is the default base currency.  You can
+change the base currency with the
+@option{-b} option described below.  Allowable base currencies are listed on
+the FloatRates website.  Exchange rates update daily.  
+
+@item
+The European Central Bank (@uref{https://www.ecb.europa.eu}).
+The base currency is always the euro (@samp{EUR}).  Exchange rates 
+update daily.  This source offers a more limited list of currencies
+than the others.  
+
+@item
+Fixer (@uref{https://fixer.io}).
+Registration for a free API key is required.  With a free API key, base
+currency is the euro; exchange rates are updated hourly, the
+service has a limit of 1,000 API calls per month, and SSL encryption
+(https protocol) is not available.  Most of these restrictions are
+eliminated or reduced with paid plans.
+
+@item
+open exchange rates (@uref{https://openexchangerates.org}).
+Registration for a free API key is required.  With a free API key, the
+base currency is the US dollar; exchange rates are updated hourly, and
+there is a limit of 1,000 API calls per month.  Most of these
+restrictions are eliminated or reduced with paid plans.
+
+@end itemize
+
+@noindent
+The default source is FloatRates; you can select a different one using
+@option{-s} option described below.
+
+Precious metals pricing is obtained from Packetizer
+(@uref{www.packetizer.com}).  This site updates once per day.
+
+You invoke @command{units_cur} like this:
+
+@example
+units_cur [@var{options}] [@var{outfile}]
+@end example
+
+@noindent
+By default, the output is written to the default currency file described
+above; this is usually what you want, because this is where
+@command{units} looks for the file.  If you wish, you can specify a
+different filename on the command line and @command{units_cur} will
+write the data to that file.  If you give @samp{-} for the file it will
+write to standard output.
+
+@noindent
+The following options are available:
+
+@table @env
+@item -h
+@itemx --help
+Print a summary of the options for @command{units_cur}.
+
+@item -V
+@itemx --version
+Print the @command{units_cur} version number.
+
+@item -v
+@itemx --verbose
+Give slightly more verbose output when attempting to update currency
+exchange rates.
+
+@item -s @var{source}
+@itemx --source @var{source}
+Specify the source for currency exchange rates; currently supported
+values are @samp{floatrates} (for FloatRates), @samp{eubank} (for the
+European Central Bank), @samp{fixer} (for Fixer), and
+@samp{openexchangerates} (for open exchange rates); the last two require
+an API key to be given with the @option{-k} option.
+
+@item -b @var{base}
+@itemx --base @var{base}
+Set the base currency (when allowed by the site providing the data).
+@var{base} should be a 3-letter ISO currency code, e.g., @samp{USD}.
+The specified currency will be the primitive currency unit used by
+@command{units}.  You may find it convenient to specify your local
+currency.  Conversions may be more accurate and you will be able to
+convert to your currency by simply hitting @key{Enter} at the
+@w{@samp{You want:}} prompt.  This option is ignored if the source
+does not allow specifying the base currency.  (Currently only
+floatrates supports this option.)
+
+@item -k @var{key}
+@itemx --key @var{key}
+Set the API key to @var{key} for sources that require it.
+
+@end table
+
+@node Database Syntax
+@chapter Database Command Syntax
+@cindex database syntax summary
+@cindex syntax of units database
+@cindex commands in units database
+
+@table @t
+@item @var{unit} @var{definition}
+Define a regular unit.
+
+@item @var{prefix}- @var{definition}
+Define a prefix.
+
+@item @var{funcname}(@var{var}) noerror units=[@var{in-units},@var{out-units}] domain=[@var{x1},@var{x2}] range=[@var{y1},@var{y2}] @var{definition(var)} ; @var{inverse(funcname)}
+Define a nonlinear unit or unit function.  The four optional keywords @command{noerror},
+@command{units=}, @command{range=} and @command{domain=} can appear in
+any order.  The definition of the inverse is optional.
+
+@item @var{tabname}[@var{out-units}] noerror @var{pair-list}
+Define a piecewise linear unit.  The pair list gives the points on the
+table listed in ascending order.  The @command{noerror} keyword is
+optional.  
+
+@item !endlocale
+End a block of definitions beginning with @samp{!locale}
+
+@item !endutf8
+End a block of definitions begun with @samp{!utf8}
+
+@item !endvar
+End a block of definitions begun with @samp{!var} or @samp{!varnot}
+
+@item !include @var{file}
+Include the specified file.
+
+@item !locale @var{value}
+Load the following definitions only of the locale is set to
+@var{value}.
+
+@item !message @var{text}
+Display @var{text} when the database is read unless the quiet
+option (@option{-q}) is enabled.  If you omit @var{text}, then units
+will display a blank line.  Messages will also appear in the log
+file.  
+
+@item !prompt @var{text}
+Prefix the @w{@samp{You have:}} prompt with the specified text.  If
+you omit @var{text}, then any existing prefix is canceled.  
+
+@item !set @var{variable} @var{value}
+Sets the environment variable, @var{variable}, to the specified
+value @emph{only if} it is not already set.
+
+@item !unitlist @var{alias} @var{definition}
+Define a unit list alias.
+
+@item !utf8
+Load the following definitions only if @command{units} is running with
+UTF-8 enabled.
+
+@item !var @var{envar} @var{value-list}
+Load the block of definitions that follows only if the environment
+variable @var{envar} is set to one of the values listed in the
+space-separated value list.  If @var{envar} is not set,
+@command{units} prints an error message and ignores the block of
+definitions.
+
+@item !varnot @var{envar} @var{value-list}
+Load the block of definitions that follows only if the environment
+variable @var{envar} is set to value that is @emph{not} listed in the
+space-separated value list.  If @var{envar} is not set, @command{units}
+prints an error message and ignores the block of definitions.
+
+@end table
+
+@node GNU Free Documentation License
+@chapter GNU Free Documentation License
+@include fdl-1.3.texi
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+@bye
+
+@c man .SH FILES
+@c man @DATAFILE@ \(em the standard units data file
+@c man .SH AUTHOR
+

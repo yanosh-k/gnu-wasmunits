@@ -1,0 +1,112 @@
+﻿# Makefile for units, a program for units conversion
+# created for Microsoft Visual C/C++ under Microsoft Windows(R)
+#
+# Copyright (C) 1996, 1997, 1999, 2005, 2006, 2012, 2013, 2014, 2017, 2020
+# Free Software Foundation, Inc
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#    
+#
+# The units program was written by Adrian Mariano (adrianm@gnu.org).
+# This makefile was written by Adrian Mariano and Jeff Conrad
+# (jeff_conrad@msn.com), and tested with Microsoft Visual Studio 2015
+# on Windows 10 Professional.
+# It was previously tested with MS Visual C/C++ 6.0, and MS Visual
+# Studio 2005, 2008, and 2010 on Windows XP Professional SP3
+
+# Change these to suit the system configuration
+# Normal location on 32-bit system
+# ProgFilesDir = %ProgramFiles%
+# Normal location for 32-bit executable on 64-bit system
+# ProgFilesDir = %ProgramFiles(x86)%
+# Normal location on 64-bit system
+ProgFilesDir = %ProgramFiles%
+
+bindir =  "$(ProgFilesDir)\GNU\units"
+datadir = "$(ProgFilesDir)\GNU\units"
+
+srcdir = .
+
+# These are for Microsoft Visual Studio; edit to suit for other compilers.
+# Do NOT give the 'Za' flag with MSVC.
+
+CC = cl
+RC = rc.exe
+CFLAGS = /O2 /W3 /nologo
+
+OBJS = units.obj getopt.obj getopt1.obj parse.obj
+
+# suppress warnings about "unsafe" functions
+CDEFS = /DNO_SETENV /D_CRT_SECURE_NO_WARNINGS
+# add this to CDEFS if compiler version doesn't have isfinite()
+# /DNO_ISFINITE
+UDEFS = /DUNITSFILE=\"definitions.units\" /DLOCALEMAP=\"locale_map.txt\"
+RES = units.res
+
+all: units.exe units_cur.py
+
+units.exe: $(OBJS) $(RES)
+	$(CC) $(CFLAGS) $(CDEFS) $(UDEFS) $(OBJS) $(RES) $(LIBS)
+
+units.obj: units.c units.h
+
+getopt.obj: getopt.c
+	$(CC) $(CFLAGS) $(CDEFS) /c getopt.c
+
+getopt1.obj: getopt1.c getopt.h
+	$(CC) $(CFLAGS) $(CDEFS) /c getopt1.c
+
+units.obj: units.c
+	$(CC) $(CFLAGS) $(CDEFS) $(UDEFS) /c units.c
+
+parse.obj: parse.tab.c units.h
+	$(CC) $(CFLAGS) $(CDEFS) /c parse.tab.c
+	del /f/q parse.obj
+	rename parse.tab.obj parse.obj
+
+units_cur.py: units_cur
+	copy units_cur units_cur.py
+
+showdest:
+	@echo datadir=$(datadir) & echo bindir=$(bindir)
+	@if not exist "$(ProgFilesDir)" \
+	  echo '$(ProgFilesDir)' does not exist and will be created
+
+install: all
+	$(srcdir)\winmkdirs $(bindir) $(datadir)
+	copy /y units.exe $(bindir)
+	copy /y definitions.units $(datadir)
+	copy /y currency.units $(datadir)
+	copy /y locale_map.txt $(datadir)
+	copy /y unitsfile.ico $(datadir)
+	copy /y unitsprog.ico $(datadir)
+	cacls $(datadir)\definitions.units /e /g Users:c
+	cacls $(datadir)\definitions.units /e /g "Power Users":c
+	cacls $(datadir)\currency.units /e /g Users:c
+	cacls $(datadir)\currency.units /e /g "Power Users":c
+	copy /y units_cur.py $(datadir)
+	cacls $(datadir)\units_cur.py /e /g Users:c
+	cacls $(datadir)\units_cur.py /e /g "Power Users":c
+# ensure that if the MKS Toolkit is installed, the cmd internal command
+# is run rather than the assoc script
+	cmd /c assoc .units=Units.DataFile
+# change this if you want a different editor for units data files
+	for %%i in (notepad.exe) do \
+	  if exist %%~$$PATH:i (ftype Units.DataFile="%%~$$PATH:i" "%1") \
+	  else (ftype Units.DataFile=notepad.exe "%1")
+	reg add "HKCR\Units.DataFile\DefaultIcon" /f /ve /d $(datadir)\unitsfile.ico /t REG_SZ
+
+clean:
+	del /f/q $(OBJS) units_cur.py
