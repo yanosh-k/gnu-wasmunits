@@ -164,5 +164,5 @@ int evalfunc(struct unittype *theunit, struct func *infunc, int inverse,
              int allerror);
 int parseunit(struct unittype *output, const char *input, char **errstr,
               int *errloc);
-char* unitsHandler(int argc, char **argv);
+int unitsHandler(int argc, char **argv);
 

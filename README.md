@@ -6,20 +6,33 @@ A WASM port of the popular [units](https://www.gnu.org/software/units/) command 
 API reference:
 ==============
 
-When you load the WASM module in your browser, you can expose the `convert_unit` function, which works the same way as calling `units --terse HAVE WANT`.
-The returned value is the results from the convertion.
+When you load the WASM module in your browser, you can expose the `convert_unit` function trough Module.cwrap or Module.ccall.
+The generated result is the same as calling `units --terse HAVE WANT`.
+
+```
+Module.ccall('convert_unit', 'string', ['string', 'string'], [HAVE, WANT]);
+```
+
+```
+const functionAlias = Module.cwrap('convert_unit', 'string', ['string', 'string']);
+functionAlias(HAVE, WANT);
+```
+
+Where `HAVE` is a string that contains the unit you want to convert, and `WANT` is the unit you want to covert to (see the examples bellow).
+
+The resulting function calls do not return any value. To capture the generated result, you need to pre set the Module['print'] and Module['printErr'] methods. By default these will be set to console.log() and console.warn() respectivly.
 
 Examples:
 =========
 
 ```
-	// Will return "1.609344"
+	// Will generate "1.609344"
 	Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 mile', 'km']);
 
-	// Will return "0.3048"
+	// Will generate "0.3048"
 	Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 foot', 'm']);
 
-	// Will return "0.27777778"
+	// Will generate "0.27777778"
 	Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 kilometer per hour', 'meters per second'])
 ```
 

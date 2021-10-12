@@ -1885,7 +1885,7 @@ readunits(char *file, FILE *errfile,
    if (goterr)
      return E_BADFILE;
     else { 
-	  hasLoadedUnits = 1;
+	  hasLoadedUnits += 1;
 	  return 0;
 	};
 }
@@ -3485,7 +3485,7 @@ showunitname(double value, char *unitstr, int printnum)
 
 int
 showanswer(char *havestr,struct unittype *have,
-           char *wantstr,struct unittype *want,char *response)
+           char *wantstr,struct unittype *want)
 {
    struct unittype invhave;
    int doingrec;  /* reciprocal conversion? */
@@ -3533,8 +3533,7 @@ showanswer(char *havestr,struct unittype *have,
    if (flags.verbose==2)
      showunitname(have->factor / want->factor, wantstr, PRINTNUM);
    else
-     //logprintf(num_format.format, have->factor / want->factor);
-     sprintf(response, num_format.format, have->factor / want->factor);
+     logprintf(num_format.format, have->factor / want->factor);
 
    /* Print the second line of output. */
 
@@ -3551,7 +3550,7 @@ showanswer(char *havestr,struct unittype *have,
        showunitname(0,wantstr, NOPRINTNUM); 
      }
    }
-   //logputchar('\n');
+   logputchar('\n');
    return 0;
 }
 
@@ -5105,7 +5104,7 @@ processargs(int argc, char **argv, char **from, char **to)
         helpmsg();             /* helpmsg() exits with error */
      }
    }
-   
+
    return 1;
 }
 
@@ -5977,10 +5976,9 @@ write_files_sig(int sig)
 }
 
 
-char *
+int
 unitsHandler(int argc, char **argv)
 {
-   char *response;
    static struct unittype have, want;
    char *havestr=0, *wantstr=0;
    struct func *funcval;
@@ -6084,7 +6082,7 @@ unitsHandler(int argc, char **argv)
    /* user has specified the complete format--use it */
    if (num_format.format != NULL) {
        if (parsenumformat())
-         exit(EXIT_FAILURE);
+         return EXIT_FAILURE;
    }
    else
        setnumformat();
@@ -6096,7 +6094,7 @@ unitsHandler(int argc, char **argv)
      char *unitsfile;
      unitsfile = findunitsfile(ERRMSG);
      if (!unitsfile)
-       exit(EXIT_FAILURE);
+       return EXIT_FAILURE;
      else {
        int file_exists;
 
@@ -6118,7 +6116,7 @@ unitsHandler(int argc, char **argv)
 		 readerr = readunits(*unitfileptr, stderr, &unitcount, &prefixcount, 
 							 &funccount, 0);
 		 if (readerr==E_MEMORY || readerr==E_FILE) 
-		   exit(EXIT_FAILURE);
+		   return EXIT_FAILURE;
 	   }   
    }
 
@@ -6146,7 +6144,7 @@ unitsHandler(int argc, char **argv)
 
    if (flags.unitcheck) {
      checkunits(flags.unitcheck==2 || flags.verbose==2);
-     exit(EXIT_SUCCESS);
+     return EXIT_SUCCESS;
    }
 
    if (!flags.interactive) {
@@ -6156,11 +6154,11 @@ unitsHandler(int argc, char **argv)
 #ifdef SUPPORT_UTF8
      if (strwidth(havestr)<0){
        printf("Error: %s on input\n",invalid_utf8);
-       exit(EXIT_FAILURE);
+       return EXIT_FAILURE;
      }
      if (wantstr && strwidth(wantstr)<0){
        printf("Error: %s on input\n",invalid_utf8);
-       exit(EXIT_FAILURE);
+       return EXIT_FAILURE;
      }
 #endif
      replace_minus(havestr);
@@ -6171,46 +6169,46 @@ unitsHandler(int argc, char **argv)
      }
      if ((funcval = fnlookup(havestr))){
        showfuncdefinition(funcval, FUNCTION);
-       exit(EXIT_SUCCESS);
+       return EXIT_SUCCESS;
      }
      if ((funcval = invfnlookup(havestr))){
        showfuncdefinition(funcval, INVERSE);
-       exit(EXIT_SUCCESS);
+       return EXIT_SUCCESS;
      }
      if ((alias = aliaslookup(havestr))){
        showunitlistdef(alias);
-       exit(EXIT_SUCCESS);
+       return EXIT_SUCCESS;
      }
      if (processunit(&have, havestr, NOPOINT))
-       exit(EXIT_FAILURE);
+       return EXIT_FAILURE;
      if (flags.showconformable == 1) {
        tryallunits(&have,0);
-       exit(EXIT_SUCCESS);
+       return EXIT_SUCCESS;
      }
      if (!wantstr){
        showdefinition(havestr,&have);
-       exit(EXIT_SUCCESS);
+       return EXIT_SUCCESS;
      }
      if (replacealias(&wantstr, 0)) /* the 0 says that we can free wantstr */
-       exit(EXIT_FAILURE);
+       return EXIT_FAILURE;
      if ((funcval = fnlookup(wantstr))){
        if (showfunc(havestr, &have, funcval))  /* Clobbers have */
-         exit(EXIT_FAILURE);
+         return EXIT_FAILURE;
        else
-         exit(EXIT_SUCCESS);
+         return EXIT_SUCCESS;
      }
      if (processwant(&want, wantstr, NOPOINT))
-       exit(EXIT_FAILURE);
+       return EXIT_FAILURE;
      if (strchr(wantstr, UNITSEPCHAR)){
        if (showunitlist(havestr, &have, wantstr))
-         exit(EXIT_FAILURE);
+         return EXIT_FAILURE;
        else
-         exit(EXIT_SUCCESS);
+         return EXIT_SUCCESS;
      }
-     if (showanswer(havestr,&have,wantstr,&want,response))
-       exit(EXIT_FAILURE);
+     if (showanswer(havestr,&have,wantstr,&want))
+       return EXIT_FAILURE;
      else
-       return response;
+       return EXIT_SUCCESS;
    } else {       /* interactive */
      for (;;) {
        do {
@@ -6278,7 +6276,7 @@ unitsHandler(int argc, char **argv)
        else if ((funcval = fnlookup(wantstr)))
          showfunc(havestr, &have, funcval); /* Clobbers have */
        else {
-         showanswer(havestr,&have,wantstr, &want,response);
+         showanswer(havestr,&have,wantstr, &want);
          freeunit(&want);
        }
        unitcopy(&lastunit, &have);
