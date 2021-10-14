@@ -6169,10 +6169,16 @@ unitsHandler(int argc, char **argv)
      }
      if ((funcval = fnlookup(havestr))){
        showfuncdefinition(funcval, FUNCTION);
+	   unitcopy(&lastunit, &have);
+       lastunitset=1;
+       freeunit(&have);
        return EXIT_SUCCESS;
      }
      if ((funcval = invfnlookup(havestr))){
        showfuncdefinition(funcval, INVERSE);
+	   unitcopy(&lastunit, &have);
+       lastunitset=1;
+       freeunit(&have);
        return EXIT_SUCCESS;
      }
      if ((alias = aliaslookup(havestr))){
@@ -6187,34 +6193,44 @@ unitsHandler(int argc, char **argv)
      }
      if (!wantstr){
        showdefinition(havestr,&have);
+	   unitcopy(&lastunit, &have);
+       lastunitset=1;
+       freeunit(&have);
        return EXIT_SUCCESS;
      }
      if (replacealias(&wantstr, 0)) /* the 0 says that we can free wantstr */
        return EXIT_FAILURE;
      if ((funcval = fnlookup(wantstr))){
-       if (showfunc(havestr, &have, funcval))  /* Clobbers have */
+       if (showfunc(havestr, &have, funcval)) {  /* Clobbers have */
          return EXIT_FAILURE;
-       else
+       } else {
+		 unitcopy(&lastunit, &have);
+         lastunitset=1;
+         freeunit(&have);
          return EXIT_SUCCESS;
+	   }
      }
      if (processwant(&want, wantstr, NOPOINT))
        return EXIT_FAILURE;
      if (strchr(wantstr, UNITSEPCHAR)){
-       if (showunitlist(havestr, &have, wantstr))
+       if (showunitlist(havestr, &have, wantstr)) {
          return EXIT_FAILURE;
-       else
+       } else {
+		 unitcopy(&lastunit, &have);
+         lastunitset=1;
+         freeunit(&have);
          return EXIT_SUCCESS;
+	   }
      }
-     if (showanswer(havestr,&have,wantstr,&want))
+     if (showanswer(havestr,&have,wantstr,&want)) {
        return EXIT_FAILURE;
-     else {
+     } else {
+	   freeunit(&want);
 	   unitcopy(&lastunit, &have);
        lastunitset=1;
        freeunit(&have);
-	   
-	   return EXIT_SUCCESS;
+       return EXIT_SUCCESS;
 	 }
-       
    } else {       /* interactive */
      for (;;) {
        do {
