@@ -6207,8 +6207,14 @@ unitsHandler(int argc, char **argv)
      }
      if (showanswer(havestr,&have,wantstr,&want))
        return EXIT_FAILURE;
-     else
-       return EXIT_SUCCESS;
+     else {
+	   unitcopy(&lastunit, &have);
+       lastunitset=1;
+       freeunit(&have);
+	   
+	   return EXIT_SUCCESS;
+	 }
+       
    } else {       /* interactive */
      for (;;) {
        do {
