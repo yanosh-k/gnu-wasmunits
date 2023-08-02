@@ -20,20 +20,41 @@ functionAlias(HAVE, WANT);
 
 Where `HAVE` is a string that contains the unit you want to convert, and `WANT` is the unit you want to covert to (see the examples bellow).
 
-The resulting function calls do not return any value. To capture the generated result, you need to pre set the Module['print'] and Module['printErr'] methods. By default these will be set to console.log() and console.warn() respectivly.
+The resulting function calls do not return any value. To capture the generated result, you need to pre-set the Module['print'] and Module['printErr'] methods. By default these will be set to console.log() and console.warn() respectivly. You should define the Module object before loading the library:
+```
+<!-- In your HTML code -->
+<script>
+	var Module = {};
+	// Use alert() as the output function
+	Module.print = alert;
+	Module.printErr = alert;
+</script>
+<!-- Library is being loaded after we've initialized the Module object.
+The library will check for this object and merge its content with it -->
+<script src="a.out.js"></script>
+```
+
+Installation:
+==============
+
+In order to load the library, place `a.out.data`, `a.out.wasm` and `a.out.js` in the same directory where you would like to load the files from. In your HTML document simply add the script tag pointing to the `a.out.js` file:
+```
+<script src="a.out.js"></script>
+```
+`a.out.js` will automatically load the rest of the files, and this is why they need to be in the same folder.
 
 Examples:
 =========
 
 ```
-	// Will generate "1.609344"
-	Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 mile', 'km']);
+// Will generate "* 1.609344"
+Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 mile', 'km']);
 
-	// Will generate "0.3048"
-	Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 foot', 'm']);
+// Will generate "* 0.3048"
+Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 foot', 'm']);
 
-	// Will generate "0.27777778"
-	Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 kilometer per hour', 'meters per second'])
+// Will generate "* 0.27777778"
+Module.ccall('convert_unit', 'string', ['string', 'string'], ['1 kilometer per hour', 'meters per second'])
 ```
 
 To build and use the WASM library:
